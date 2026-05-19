@@ -28,9 +28,20 @@ const WeatherMap = dynamic(() => import("@/components/WeatherMap"), {
 
 const appName = process.env.NEXT_PUBLIC_APP_NAME ?? "Weather Assessment";
 const candidateName = process.env.NEXT_PUBLIC_CANDIDATE_NAME ?? "Neil C.";
+const locationInputTypes = [
+  { value: "city", label: "City" },
+  { value: "town", label: "Town" },
+  { value: "zip", label: "ZIP / Postal Code" },
+  { value: "coordinates", label: "GPS Coordinates" },
+  { value: "landmark", label: "Landmark" },
+] as const;
+
+type LocationInputType = (typeof locationInputTypes)[number]["value"];
 
 export default function Home() {
   const today = useMemo(() => toDateInputValue(new Date()), []);
+  const [locationInputType, setLocationInputType] =
+    useState<LocationInputType>("city");
   const [location, setLocation] = useState("Seattle");
   const [startDate, setStartDate] = useState(today);
   const [endDate, setEndDate] = useState(today);
@@ -66,9 +77,12 @@ export default function Home() {
     setStatus("");
 
     try {
-      const data = await apiFetch<WeatherBundle>(
-        `/api/weather/current?location=${encodeURIComponent(location)}`,
-      );
+      const data =
+        locationInputType === "coordinates"
+          ? await apiFetch<WeatherBundle>(coordinateWeatherUrl(location))
+          : await apiFetch<WeatherBundle>(
+              `/api/weather/current?location=${encodeURIComponent(location)}`,
+            );
       setWeather(data);
       setStatus(`Showing weather for ${data.location.name}.`);
     } catch (caught) {
@@ -96,6 +110,7 @@ export default function Home() {
             `/api/weather/current?lat=${latitude}&lon=${longitude}`,
           );
           setWeather(data);
+          setLocationInputType("coordinates");
           setLocation(data.location.input);
           setStatus("Showing weather for your current location.");
         } catch (caught) {
@@ -119,10 +134,27 @@ export default function Home() {
     setStatus("");
 
     try {
+      const coordinatePayload =
+        locationInputType === "coordinates"
+          ? parseCoordinates(location)
+          : weather?.location.input === location
+            ? {
+                latitude: weather.location.latitude,
+                longitude: weather.location.longitude,
+              }
+            : null;
       const record = await apiFetch<WeatherRequestRecord>("/api/weather-requests", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ location, startDate, endDate }),
+        body: JSON.stringify({
+          location:
+            locationInputType === "coordinates"
+              ? location
+              : location.trim(),
+          startDate,
+          endDate,
+          ...coordinatePayload,
+        }),
       });
       setRecords((current) => [record, ...current]);
       setWeather(record.weatherData);
@@ -211,17 +243,36 @@ export default function Home() {
             <form className="mt-5 space-y-4" onSubmit={handleSearch}>
               <label className="block">
                 <span className="text-sm font-medium text-stone-700">
+                  Location type
+                </span>
+                <select
+                  value={locationInputType}
+                  onChange={(event) =>
+                    setLocationInputType(event.target.value as LocationInputType)
+                  }
+                  className="mt-2 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-stone-950 outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+                >
+                  {locationInputTypes.map((type) => (
+                    <option key={type.value} value={type.value}>
+                      {type.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="block">
+                <span className="text-sm font-medium text-stone-700">
                   Location
                 </span>
                 <input
                   value={location}
                   onChange={(event) => setLocation(event.target.value)}
-                  placeholder="City, ZIP, town, landmark"
+                  placeholder={locationPlaceholder(locationInputType)}
                   className="mt-2 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-stone-950 outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
                 />
               </label>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-3 sm:grid-cols-[1fr_1.45fr]">
                 <button
                   className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-700 px-4 py-2 font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
                   disabled={isSearching}
@@ -245,7 +296,7 @@ export default function Home() {
                   ) : (
                     <LocateFixed className="h-4 w-4" />
                   )}
-                  Locate
+                  Use my current location
                 </button>
               </div>
             </form>
@@ -636,6 +687,54 @@ async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
   }
 
   return data as T;
+}
+
+function coordinateWeatherUrl(value: string) {
+  const { latitude, longitude } = parseCoordinates(value);
+
+  return `/api/weather/current?lat=${latitude}&lon=${longitude}`;
+}
+
+function parseCoordinates(value: string) {
+  const match = value
+    .trim()
+    .match(/^\s*(-?\d+(?:\.\d+)?)\s*[, ]\s*(-?\d+(?:\.\d+)?)\s*$/);
+
+  if (!match) {
+    throw new Error("Enter GPS coordinates as latitude, longitude.");
+  }
+
+  const latitude = Number(match[1]);
+  const longitude = Number(match[2]);
+
+  if (
+    !Number.isFinite(latitude) ||
+    !Number.isFinite(longitude) ||
+    latitude < -90 ||
+    latitude > 90 ||
+    longitude < -180 ||
+    longitude > 180
+  ) {
+    throw new Error("GPS coordinates must use valid latitude and longitude.");
+  }
+
+  return { latitude, longitude };
+}
+
+function locationPlaceholder(type: LocationInputType) {
+  switch (type) {
+    case "zip":
+      return "Example: 98101 or SW1A 1AA";
+    case "coordinates":
+      return "Example: 47.6062, -122.3321";
+    case "landmark":
+      return "Example: Space Needle";
+    case "town":
+      return "Example: Redmond";
+    case "city":
+    default:
+      return "Example: Seattle";
+  }
 }
 
 function errorMessage(caught: unknown) {

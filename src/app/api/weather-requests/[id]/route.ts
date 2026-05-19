@@ -6,7 +6,10 @@ import {
   validateDateRange,
   weatherRequestSchema,
 } from "@/lib/validation";
-import { getWeatherBundleForLocation } from "@/lib/weather";
+import {
+  getWeatherBundleForCoordinates,
+  getWeatherBundleForLocation,
+} from "@/lib/weather";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -40,14 +43,24 @@ export async function PATCH(request: Request, context: RouteContext) {
       return jsonError("Weather request not found.", 404);
     }
 
-    const weather = await getWeatherBundleForLocation(parsed.data.location, {
-      startDate: parsed.data.startDate,
-      endDate: parsed.data.endDate,
-    });
+    const weather =
+      parsed.data.latitude !== undefined && parsed.data.longitude !== undefined
+        ? await getWeatherBundleForCoordinates(
+            parsed.data.latitude,
+            parsed.data.longitude,
+            {
+              startDate: parsed.data.startDate,
+              endDate: parsed.data.endDate,
+            },
+          )
+        : await getWeatherBundleForLocation(parsed.data.location ?? "", {
+            startDate: parsed.data.startDate,
+            endDate: parsed.data.endDate,
+          });
     const record = await prisma.weatherRequest.update({
       where: { id },
       data: {
-        inputLocation: parsed.data.location,
+        inputLocation: parsed.data.location?.trim() || weather.location.input,
         resolvedName: weather.location.name,
         latitude: weather.location.latitude,
         longitude: weather.location.longitude,

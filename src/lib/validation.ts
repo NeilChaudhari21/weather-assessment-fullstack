@@ -11,10 +11,17 @@ export const locationQuerySchema = z.object({
 });
 
 export const weatherRequestSchema = z.object({
-  location: z.string().trim().min(1, "Enter a location."),
+  location: z.string().trim().optional(),
+  latitude: z.number().min(-90).max(90).optional(),
+  longitude: z.number().min(-180).max(180).optional(),
   startDate: isoDateSchema,
   endDate: isoDateSchema,
-});
+}).refine(
+  (value) =>
+    Boolean(value.location?.trim()) ||
+    (value.latitude !== undefined && value.longitude !== undefined),
+  "Enter a location or use coordinates.",
+);
 
 export type WeatherRequestInput = z.infer<typeof weatherRequestSchema>;
 
