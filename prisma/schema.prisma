@@ -1,0 +1,26 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model WeatherRequest {
+  id             String   @id @default(cuid())
+  inputLocation  String
+  resolvedName   String
+  latitude       Float
+  longitude      Float
+  startDate      DateTime
+  endDate        DateTime
+  weatherData    Json
+  airQualityData Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([createdAt])
+  @@index([resolvedName])
+}
