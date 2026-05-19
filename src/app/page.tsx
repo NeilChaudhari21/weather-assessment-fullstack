@@ -84,7 +84,7 @@ export default function Home() {
               `/api/weather/current?location=${encodeURIComponent(location)}`,
             );
       setWeather(data);
-      setStatus(`Showing weather for ${data.location.name}.`);
+      setStatus(successWeatherMessage(data, locationInputType));
     } catch (caught) {
       setError(errorMessage(caught));
     } finally {
@@ -112,7 +112,7 @@ export default function Home() {
           setWeather(data);
           setLocationInputType("coordinates");
           setLocation(data.location.input);
-          setStatus("Showing weather for your current location.");
+          setStatus(`Showing weather for coordinates: ${data.location.input}.`);
         } catch (caught) {
           setError(errorMessage(caught));
         } finally {
@@ -739,6 +739,17 @@ function locationPlaceholder(type: LocationInputType) {
 
 function errorMessage(caught: unknown) {
   return caught instanceof Error ? caught.message : "Something went wrong.";
+}
+
+function successWeatherMessage(
+  weather: WeatherBundle,
+  inputType: LocationInputType,
+) {
+  if (inputType === "coordinates") {
+    return `Showing weather for coordinates: ${weather.location.input}.`;
+  }
+
+  return `Showing weather for ${weather.location.name}.`;
 }
 
 function formatNumber(value: number | null) {

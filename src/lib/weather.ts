@@ -10,6 +10,7 @@ import type {
 const forecastBaseUrl = "https://api.open-meteo.com/v1/forecast";
 const geocodingBaseUrl = "https://geocoding-api.open-meteo.com/v1/search";
 const airQualityBaseUrl = "https://air-quality-api.open-meteo.com/v1/air-quality";
+const nominatimBaseUrl = "https://nominatim.openstreetmap.org/search";
 
 export async function resolveLocation(input: string): Promise<ResolvedLocation> {
   const trimmed = input.trim();
@@ -32,7 +33,7 @@ export async function resolveLocation(input: string): Promise<ResolvedLocation> 
   const match = data.results?.[0];
 
   if (!match) {
-    throw new Error(`No matching location found for "${trimmed}".`);
+    return resolveLandmarkLocation(trimmed);
   }
 
   return {
@@ -43,6 +44,42 @@ export async function resolveLocation(input: string): Promise<ResolvedLocation> 
     latitude: match.latitude,
     longitude: match.longitude,
     timezone: match.timezone,
+  };
+}
+
+async function resolveLandmarkLocation(input: string): Promise<ResolvedLocation> {
+  const params = new URLSearchParams({
+    q: input,
+    format: "jsonv2",
+    limit: "1",
+    addressdetails: "1",
+  });
+  const data = await getJson<NominatimResult[]>(
+    `${nominatimBaseUrl}?${params}`,
+    "Landmark lookup failed.",
+    {
+      "user-agent": "weather-assessment-fullstack/1.0",
+      referer: "https://github.com/NeilChaudhari21/weather-assessment-fullstack",
+    },
+  );
+  const match = data[0];
+
+  if (!match) {
+    throw new Error(`No matching location found for "${input}".`);
+  }
+
+  const latitude = Number(match.lat);
+  const longitude = Number(match.lon);
+
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    throw new Error(`No usable coordinates found for "${input}".`);
+  }
+
+  return {
+    input,
+    name: match.display_name,
+    latitude,
+    longitude,
   };
 }
 
@@ -151,11 +188,16 @@ async function getAirQuality(latitude: number, longitude: number) {
   }
 }
 
-async function getJson<T>(url: string, fallbackMessage: string): Promise<T> {
+async function getJson<T>(
+  url: string,
+  fallbackMessage: string,
+  headers: HeadersInit = {},
+): Promise<T> {
   const response = await fetch(url, {
     next: { revalidate: 300 },
     headers: {
       accept: "application/json",
+      ...headers,
     },
   });
 
@@ -227,6 +269,12 @@ type OpenMeteoGeocodingResult = {
   country?: string;
   admin1?: string;
   timezone?: string;
+};
+
+type NominatimResult = {
+  display_name: string;
+  lat: string;
+  lon: string;
 };
 
 type OpenMeteoForecastResponse = {
