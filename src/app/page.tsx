@@ -29,8 +29,7 @@ const WeatherMap = dynamic(() => import("@/components/WeatherMap"), {
 const appName = process.env.NEXT_PUBLIC_APP_NAME ?? "Weather Assessment";
 const candidateName = process.env.NEXT_PUBLIC_CANDIDATE_NAME ?? "Neil C.";
 const locationInputTypes = [
-  { value: "city", label: "City" },
-  { value: "town", label: "Town" },
+  { value: "cityTown", label: "City/Town" },
   { value: "zip", label: "ZIP / Postal Code" },
   { value: "coordinates", label: "GPS Coordinates" },
   { value: "landmark", label: "Landmark" },
@@ -41,7 +40,7 @@ type LocationInputType = (typeof locationInputTypes)[number]["value"];
 export default function Home() {
   const today = useMemo(() => toDateInputValue(new Date()), []);
   const [locationInputType, setLocationInputType] =
-    useState<LocationInputType>("city");
+    useState<LocationInputType>("cityTown");
   const [location, setLocation] = useState("Seattle");
   const [startDate, setStartDate] = useState(today);
   const [endDate, setEndDate] = useState(today);
@@ -758,9 +757,7 @@ function locationPlaceholder(type: LocationInputType) {
       return "Example: 47.6062, -122.3321";
     case "landmark":
       return "Example: Space Needle";
-    case "town":
-      return "Example: Redmond";
-    case "city":
+    case "cityTown":
     default:
       return "Example: Seattle";
   }
