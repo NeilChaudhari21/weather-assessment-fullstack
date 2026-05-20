@@ -37,6 +37,7 @@ export async function POST(request: Request) {
             {
               startDate: parsed.data.startDate,
               endDate: parsed.data.endDate,
+              isCurrentLocation: parsed.data.isCurrentLocation,
             },
           )
         : await getWeatherBundleForLocation(parsed.data.location ?? "", {
@@ -45,7 +46,10 @@ export async function POST(request: Request) {
           });
     const record = await prisma.weatherRequest.create({
       data: {
-        inputLocation: parsed.data.location?.trim() || weather.location.input,
+        inputLocation:
+          parsed.data.isCurrentLocation
+            ? "Current location"
+            : parsed.data.location?.trim() || weather.location.input,
         resolvedName: weather.location.name,
         latitude: weather.location.latitude,
         longitude: weather.location.longitude,

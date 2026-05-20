@@ -86,10 +86,13 @@ async function resolveLandmarkLocation(input: string): Promise<ResolvedLocation>
 export async function reverseResolveLocation(
   latitude: number,
   longitude: number,
+  options: { isCurrentLocation?: boolean } = {},
 ): Promise<ResolvedLocation> {
+  const coordinates = formatCoordinates(latitude, longitude);
+
   return {
-    input: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
-    name: `Current location (${latitude.toFixed(3)}, ${longitude.toFixed(3)})`,
+    input: coordinates,
+    name: options.isCurrentLocation ? `Current location (${coordinates})` : coordinates,
     latitude,
     longitude,
   };
@@ -106,9 +109,15 @@ export async function getWeatherBundleForLocation(
 export async function getWeatherBundleForCoordinates(
   latitude: number,
   longitude: number,
-  options: { startDate?: string; endDate?: string } = {},
+  options: {
+    startDate?: string;
+    endDate?: string;
+    isCurrentLocation?: boolean;
+  } = {},
 ) {
-  const location = await reverseResolveLocation(latitude, longitude);
+  const location = await reverseResolveLocation(latitude, longitude, {
+    isCurrentLocation: options.isCurrentLocation,
+  });
   return getWeatherBundle(location, options);
 }
 
@@ -260,6 +269,10 @@ function nullableNumber(value: unknown) {
 
 function formatResolvedName(match: OpenMeteoGeocodingResult) {
   return [match.name, match.admin1, match.country].filter(Boolean).join(", ");
+}
+
+function formatCoordinates(latitude: number, longitude: number) {
+  return `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
 }
 
 type OpenMeteoGeocodingResult = {

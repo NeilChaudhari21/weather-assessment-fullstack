@@ -20,9 +20,11 @@ export async function GET(request: Request) {
   try {
     const { location, lat, lon } = parsed.data;
     const bundle = location
-      ? await getWeatherBundleForLocation(location)
-      : lat !== undefined && lon !== undefined
-        ? await getWeatherBundleForCoordinates(lat, lon)
+        ? await getWeatherBundleForLocation(location)
+        : lat !== undefined && lon !== undefined
+        ? await getWeatherBundleForCoordinates(lat, lon, {
+            isCurrentLocation: searchParams.get("source") === "current",
+          })
         : null;
 
     if (!bundle) {

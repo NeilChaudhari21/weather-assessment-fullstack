@@ -26,7 +26,9 @@ export async function GET(request: Request) {
     }
 
     if (lat !== undefined && lon !== undefined) {
-      const bundle = await getWeatherBundleForCoordinates(lat, lon);
+      const bundle = await getWeatherBundleForCoordinates(lat, lon, {
+        isCurrentLocation: searchParams.get("source") === "current",
+      });
       return Response.json(bundle);
     }
 

@@ -46,6 +46,7 @@ export default function Home() {
   const [startDate, setStartDate] = useState(today);
   const [endDate, setEndDate] = useState(today);
   const [weather, setWeather] = useState<WeatherBundle | null>(null);
+  const [isCurrentLocationResult, setIsCurrentLocationResult] = useState(false);
   const [records, setRecords] = useState<WeatherRequestRecord[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingLocation, setEditingLocation] = useState("");
@@ -84,6 +85,7 @@ export default function Home() {
               `/api/weather/current?location=${encodeURIComponent(location)}`,
             );
       setWeather(data);
+      setIsCurrentLocationResult(false);
       setStatus(successWeatherMessage(data, locationInputType));
     } catch (caught) {
       setError(errorMessage(caught));
@@ -107,12 +109,13 @@ export default function Home() {
         try {
           const { latitude, longitude } = position.coords;
           const data = await apiFetch<WeatherBundle>(
-            `/api/weather/current?lat=${latitude}&lon=${longitude}`,
+            `/api/weather/current?lat=${latitude}&lon=${longitude}&source=current`,
           );
           setWeather(data);
+          setIsCurrentLocationResult(true);
           setLocationInputType("coordinates");
           setLocation(data.location.input);
-          setStatus(`Showing weather for coordinates: ${data.location.input}.`);
+          setStatus(`Showing weather for ${data.location.name}.`);
         } catch (caught) {
           setError(errorMessage(caught));
         } finally {
@@ -135,14 +138,7 @@ export default function Home() {
 
     try {
       const coordinatePayload =
-        locationInputType === "coordinates"
-          ? parseCoordinates(location)
-          : weather?.location.input === location
-            ? {
-                latitude: weather.location.latitude,
-                longitude: weather.location.longitude,
-              }
-            : null;
+        locationInputType === "coordinates" ? parseCoordinates(location) : null;
       const record = await apiFetch<WeatherRequestRecord>("/api/weather-requests", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -153,11 +149,18 @@ export default function Home() {
               : location.trim(),
           startDate,
           endDate,
+          isCurrentLocation: isCurrentLocationResult,
           ...coordinatePayload,
         }),
       });
       setRecords((current) => [record, ...current]);
-      setWeather(record.weatherData);
+      const dashboardWeather = await fetchDashboardWeather({
+        location:
+          locationInputType === "coordinates" ? undefined : location.trim(),
+        coordinates: coordinatePayload,
+        isCurrentLocation: isCurrentLocationResult,
+      });
+      setWeather(dashboardWeather);
       setStatus(`Saved ${record.resolvedName}.`);
     } catch (caught) {
       setError(errorMessage(caught));
@@ -247,9 +250,10 @@ export default function Home() {
                 </span>
                 <select
                   value={locationInputType}
-                  onChange={(event) =>
-                    setLocationInputType(event.target.value as LocationInputType)
-                  }
+                  onChange={(event) => {
+                    setLocationInputType(event.target.value as LocationInputType);
+                    setIsCurrentLocationResult(false);
+                  }}
                   className="mt-2 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-stone-950 outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
                 >
                   {locationInputTypes.map((type) => (
@@ -266,7 +270,10 @@ export default function Home() {
                 </span>
                 <input
                   value={location}
-                  onChange={(event) => setLocation(event.target.value)}
+                  onChange={(event) => {
+                    setLocation(event.target.value);
+                    setIsCurrentLocationResult(false);
+                  }}
                   placeholder={locationPlaceholder(locationInputType)}
                   className="mt-2 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-stone-950 outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
                 />
@@ -687,6 +694,28 @@ async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
   }
 
   return data as T;
+}
+
+async function fetchDashboardWeather({
+  location,
+  coordinates,
+  isCurrentLocation,
+}: {
+  location?: string;
+  coordinates: { latitude: number; longitude: number } | null;
+  isCurrentLocation: boolean;
+}) {
+  if (coordinates) {
+    const source = isCurrentLocation ? "&source=current" : "";
+
+    return apiFetch<WeatherBundle>(
+      `/api/weather/current?lat=${coordinates.latitude}&lon=${coordinates.longitude}${source}`,
+    );
+  }
+
+  return apiFetch<WeatherBundle>(
+    `/api/weather/current?location=${encodeURIComponent(location ?? "")}`,
+  );
 }
 
 function coordinateWeatherUrl(value: string) {

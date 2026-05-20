@@ -51,6 +51,7 @@ export async function PATCH(request: Request, context: RouteContext) {
             {
               startDate: parsed.data.startDate,
               endDate: parsed.data.endDate,
+              isCurrentLocation: parsed.data.isCurrentLocation,
             },
           )
         : await getWeatherBundleForLocation(parsed.data.location ?? "", {
@@ -60,7 +61,10 @@ export async function PATCH(request: Request, context: RouteContext) {
     const record = await prisma.weatherRequest.update({
       where: { id },
       data: {
-        inputLocation: parsed.data.location?.trim() || weather.location.input,
+        inputLocation:
+          parsed.data.isCurrentLocation
+            ? "Current location"
+            : parsed.data.location?.trim() || weather.location.input,
         resolvedName: weather.location.name,
         latitude: weather.location.latitude,
         longitude: weather.location.longitude,
