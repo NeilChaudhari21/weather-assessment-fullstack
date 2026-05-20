@@ -28,7 +28,26 @@ describe("weatherRequestsToCsv", () => {
           weatherCode: 2,
           summary: "Partly cloudy",
         },
-        forecast: [],
+        forecast: [
+          {
+            date: "2026-05-19",
+            weatherCode: 2,
+            summary: "Partly cloudy",
+            temperatureMax: 21,
+            temperatureMin: 12,
+            precipitationSum: 0,
+            windSpeedMax: 10,
+          },
+          {
+            date: "2026-05-20",
+            weatherCode: 61,
+            summary: "Slight rain",
+            temperatureMax: 19,
+            temperatureMin: 11,
+            precipitationSum: 2,
+            windSpeedMax: 14,
+          },
+        ],
         airQuality: null,
       },
       airQualityData: {
@@ -47,6 +66,10 @@ describe("weatherRequestsToCsv", () => {
 
     expect(csv).toContain('"Seattle, WA"');
     expect(csv).toContain('"Seattle, Washington, United States"');
+    expect(csv).toContain("Saved date range,2026-05-19 to 2026-05-20");
+    expect(csv).toContain("Date,Summary,High temp (C),Low temp (C)");
+    expect(csv).toContain("2026-05-19,Partly cloudy,21,12,0,10");
+    expect(csv).toContain("2026-05-20,Slight rain,19,11,2,14");
     expect(csv).toContain("Partly cloudy");
     expect(csv).toContain("Good");
   });
