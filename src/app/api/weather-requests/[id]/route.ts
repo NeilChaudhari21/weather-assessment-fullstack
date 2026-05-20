@@ -11,6 +11,10 @@ import {
   getWeatherBundleForLocation,
 } from "@/lib/weather";
 
+function savedResolvedName(inputLocation: string | undefined, weatherName: string) {
+  return inputLocation?.trim() || weatherName;
+}
+
 type RouteContext = {
   params: Promise<{ id: string }>;
 };
@@ -58,14 +62,18 @@ export async function PATCH(request: Request, context: RouteContext) {
             startDate: parsed.data.startDate,
             endDate: parsed.data.endDate,
           });
+    const savedInputLocation =
+      parsed.data.isCurrentLocation
+        ? "Current location"
+        : parsed.data.location?.trim() || weather.location.input;
     const record = await prisma.weatherRequest.update({
       where: { id },
       data: {
-        inputLocation:
-          parsed.data.isCurrentLocation
-            ? "Current location"
-            : parsed.data.location?.trim() || weather.location.input,
-        resolvedName: weather.location.name,
+        inputLocation: savedInputLocation,
+        resolvedName:
+          parsed.data.locationType === "landmark"
+            ? savedResolvedName(parsed.data.location, weather.location.name)
+            : weather.location.name,
         latitude: weather.location.latitude,
         longitude: weather.location.longitude,
         startDate: parseDateOnly(parsed.data.startDate),

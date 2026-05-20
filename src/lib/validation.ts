@@ -12,6 +12,9 @@ export const locationQuerySchema = z.object({
 
 export const weatherRequestSchema = z.object({
   location: z.string().trim().optional(),
+  locationType: z
+    .enum(["cityTown", "zip", "coordinates", "landmark"])
+    .optional(),
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
   isCurrentLocation: z.boolean().optional(),

@@ -36,12 +36,15 @@ const locationInputTypes = [
 ] as const;
 
 type LocationInputType = (typeof locationInputTypes)[number]["value"];
+type TemperatureUnit = "celsius" | "fahrenheit";
 
 export default function Home() {
   const today = useMemo(() => toDateInputValue(new Date()), []);
   const [locationInputType, setLocationInputType] =
     useState<LocationInputType>("cityTown");
   const [location, setLocation] = useState("Seattle");
+  const [temperatureUnit, setTemperatureUnit] =
+    useState<TemperatureUnit>("celsius");
   const [startDate, setStartDate] = useState(today);
   const [endDate, setEndDate] = useState(today);
   const [weather, setWeather] = useState<WeatherBundle | null>(null);
@@ -143,9 +146,8 @@ export default function Home() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           location:
-            locationInputType === "coordinates"
-              ? location
-              : location.trim(),
+            locationInputType === "coordinates" ? location : location.trim(),
+          locationType: locationInputType,
           startDate,
           endDate,
           isCurrentLocation: isCurrentLocationResult,
@@ -307,6 +309,36 @@ export default function Home() {
               </div>
             </form>
 
+            <div className="mt-6 border-t border-stone-200 pt-5">
+              <p className="text-sm font-medium text-stone-700">
+                Temperature unit
+              </p>
+              <div className="mt-2 grid grid-cols-2 rounded-lg border border-stone-300 bg-stone-100 p-1">
+                <button
+                  className={`rounded-md px-3 py-2 text-sm font-semibold transition ${
+                    temperatureUnit === "celsius"
+                      ? "bg-white text-stone-950 shadow-sm"
+                      : "text-stone-600 hover:text-stone-950"
+                  }`}
+                  onClick={() => setTemperatureUnit("celsius")}
+                  type="button"
+                >
+                  Celsius
+                </button>
+                <button
+                  className={`rounded-md px-3 py-2 text-sm font-semibold transition ${
+                    temperatureUnit === "fahrenheit"
+                      ? "bg-white text-stone-950 shadow-sm"
+                      : "text-stone-600 hover:text-stone-950"
+                  }`}
+                  onClick={() => setTemperatureUnit("fahrenheit")}
+                  type="button"
+                >
+                  Fahrenheit
+                </button>
+              </div>
+            </div>
+
             <form className="mt-6 space-y-4 border-t border-stone-200 pt-5" onSubmit={handleSave}>
               <h3 className="font-semibold">Save Weather Request</h3>
               <div className="grid grid-cols-2 gap-3">
@@ -356,10 +388,11 @@ export default function Home() {
             )}
           </div>
 
-          <WeatherResults weather={weather} />
+          <WeatherResults temperatureUnit={temperatureUnit} weather={weather} />
         </section>
 
         <SavedRequests
+          temperatureUnit={temperatureUnit}
           records={records}
           editingId={editingId}
           editingLocation={editingLocation}
@@ -395,7 +428,13 @@ export default function Home() {
   );
 }
 
-function WeatherResults({ weather }: { weather: WeatherBundle | null }) {
+function WeatherResults({
+  temperatureUnit,
+  weather,
+}: {
+  temperatureUnit: TemperatureUnit;
+  weather: WeatherBundle | null;
+}) {
   if (!weather) {
     return (
       <section className="flex min-h-[520px] items-center justify-center rounded-lg border border-dashed border-stone-300 bg-white p-6 text-center shadow-sm">
@@ -422,14 +461,20 @@ function WeatherResults({ weather }: { weather: WeatherBundle | null }) {
                 {weather.location.name}
               </div>
               <h2 className="mt-3 text-5xl font-semibold">
-                {formatNumber(weather.current.temperature)}°C
+                {formatTemperature(weather.current.temperature, temperatureUnit)}
               </h2>
               <p className="mt-2 text-lg text-stone-700">
                 {weather.current.summary}
               </p>
             </div>
             <div className="grid grid-cols-2 gap-3 text-sm sm:min-w-64">
-              <Metric label="Feels" value={`${formatNumber(weather.current.apparentTemperature)}°C`} />
+              <Metric
+                label="Feels"
+                value={formatTemperature(
+                  weather.current.apparentTemperature,
+                  temperatureUnit,
+                )}
+              />
               <Metric label="Humidity" value={`${formatNumber(weather.current.humidity)}%`} />
               <Metric label="Wind" value={`${formatNumber(weather.current.windSpeed)} km/h`} />
               <Metric label="Rain" value={`${formatNumber(weather.current.precipitation)} mm`} />
@@ -452,8 +497,8 @@ function WeatherResults({ weather }: { weather: WeatherBundle | null }) {
                   {day.summary}
                 </p>
                 <p className="mt-3 text-lg font-semibold">
-                  {formatNumber(day.temperatureMax)}° /{" "}
-                  {formatNumber(day.temperatureMin)}°
+                  {formatTemperature(day.temperatureMax, temperatureUnit)} /{" "}
+                  {formatTemperature(day.temperatureMin, temperatureUnit)}
                 </p>
                 <p className="mt-1 text-xs text-stone-500">
                   {formatNumber(day.precipitationSum)} mm rain
@@ -499,6 +544,7 @@ function WeatherResults({ weather }: { weather: WeatherBundle | null }) {
 }
 
 function SavedRequests({
+  temperatureUnit,
   records,
   editingId,
   editingLocation,
@@ -512,6 +558,7 @@ function SavedRequests({
   setEditingStartDate,
   setEditingEndDate,
 }: {
+  temperatureUnit: TemperatureUnit;
   records: WeatherRequestRecord[];
   editingId: string | null;
   editingLocation: string;
@@ -603,7 +650,11 @@ function SavedRequests({
                     )}
                   </td>
                   <td className="py-3 pr-3">
-                    {formatNumber(record.weatherData.current.temperature)}°C,{" "}
+                    {formatTemperature(
+                      record.weatherData.current.temperature,
+                      temperatureUnit,
+                    )}
+                    ,{" "}
                     {record.weatherData.current.summary}
                   </td>
                   <td className="py-3 pr-3">
@@ -780,6 +831,17 @@ function successWeatherMessage(
 
 function formatNumber(value: number | null) {
   return value === null ? "N/A" : Math.round(value).toString();
+}
+
+function formatTemperature(value: number | null, unit: TemperatureUnit) {
+  if (value === null) {
+    return "N/A";
+  }
+
+  const displayValue =
+    unit === "fahrenheit" ? Math.round((value * 9) / 5 + 32) : Math.round(value);
+
+  return `${displayValue}°${unit === "fahrenheit" ? "F" : "C"}`;
 }
 
 function formatDate(value: string) {
