@@ -12,11 +12,24 @@ const geocodingBaseUrl = "https://geocoding-api.open-meteo.com/v1/search";
 const airQualityBaseUrl = "https://air-quality-api.open-meteo.com/v1/air-quality";
 const nominatimBaseUrl = "https://nominatim.openstreetmap.org/search";
 
-export async function resolveLocation(input: string): Promise<ResolvedLocation> {
+export type LocationInputType = "cityTown" | "zip" | "coordinates" | "landmark";
+
+export async function resolveLocation(
+  input: string,
+  options: { locationType?: LocationInputType } = {},
+): Promise<ResolvedLocation> {
   const trimmed = input.trim();
 
   if (!trimmed) {
     throw new Error("Enter a location.");
+  }
+
+  if (options.locationType === "zip") {
+    return resolvePostalCodeLocation(trimmed);
+  }
+
+  if (options.locationType === "landmark") {
+    return resolveLandmarkLocation(trimmed);
   }
 
   const params = new URLSearchParams({
@@ -33,7 +46,7 @@ export async function resolveLocation(input: string): Promise<ResolvedLocation> 
   const match = data.results?.[0];
 
   if (!match) {
-    return resolveLandmarkLocation(trimmed);
+    throw new Error(`No matching city or town found for "${trimmed}".`);
   }
 
   return {
@@ -47,27 +60,68 @@ export async function resolveLocation(input: string): Promise<ResolvedLocation> 
   };
 }
 
+async function resolvePostalCodeLocation(input: string): Promise<ResolvedLocation> {
+  if (!isPostalCodeLike(input)) {
+    throw new Error("Enter a valid ZIP or postal code for this location type.");
+  }
+
+  const params = new URLSearchParams({
+    postalcode: input,
+    format: "jsonv2",
+    limit: "1",
+    addressdetails: "1",
+  });
+
+  if (isUsZipCode(input)) {
+    params.set("countrycodes", "us");
+  }
+
+  const data = await getNominatimResults(params, "Postal code lookup failed.");
+  const match = data[0];
+
+  if (!match) {
+    throw new Error(`No matching ZIP or postal code found for "${input}".`);
+  }
+
+  return nominatimToLocation(input, match);
+}
+
 async function resolveLandmarkLocation(input: string): Promise<ResolvedLocation> {
+  if (isPostalCodeLike(input)) {
+    throw new Error("Enter a landmark name, not a ZIP or postal code.");
+  }
+
   const params = new URLSearchParams({
     q: input,
     format: "jsonv2",
     limit: "1",
     addressdetails: "1",
   });
-  const data = await getJson<NominatimResult[]>(
-    `${nominatimBaseUrl}?${params}`,
-    "Landmark lookup failed.",
-    {
-      "user-agent": "weather-assessment-fullstack/1.0",
-      referer: "https://github.com/NeilChaudhari21/weather-assessment-fullstack",
-    },
-  );
+  const data = await getNominatimResults(params, "Landmark lookup failed.");
   const match = data[0];
 
   if (!match) {
     throw new Error(`No matching location found for "${input}".`);
   }
 
+  if (!isLandmarkLike(match)) {
+    throw new Error("Enter a landmark name for this location type.");
+  }
+
+  return nominatimToLocation(input, match);
+}
+
+async function getNominatimResults(params: URLSearchParams, errorMessage: string) {
+  return getJson<NominatimResult[]>(`${nominatimBaseUrl}?${params}`, errorMessage, {
+    "user-agent": "weather-assessment-fullstack/1.0",
+    referer: "https://github.com/NeilChaudhari21/weather-assessment-fullstack",
+  });
+}
+
+function nominatimToLocation(
+  input: string,
+  match: NominatimResult,
+): ResolvedLocation {
   const latitude = Number(match.lat);
   const longitude = Number(match.lon);
 
@@ -100,9 +154,15 @@ export async function reverseResolveLocation(
 
 export async function getWeatherBundleForLocation(
   input: string,
-  options: { startDate?: string; endDate?: string } = {},
+  options: {
+    startDate?: string;
+    endDate?: string;
+    locationType?: LocationInputType;
+  } = {},
 ) {
-  const location = await resolveLocation(input);
+  const location = await resolveLocation(input, {
+    locationType: options.locationType,
+  });
   return getWeatherBundle(location, options);
 }
 
@@ -275,6 +335,45 @@ function formatCoordinates(latitude: number, longitude: number) {
   return `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
 }
 
+function isPostalCodeLike(input: string) {
+  const normalized = input.trim();
+  const postalPatterns = [
+    /^\d{5}(-\d{4})?$/,
+    /^[A-Z]\d[A-Z][ -]?\d[A-Z]\d$/i,
+    /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i,
+    /^\d{4,6}$/,
+  ];
+
+  return postalPatterns.some((pattern) => pattern.test(normalized));
+}
+
+function isUsZipCode(input: string) {
+  return /^\d{5}(-\d{4})?$/.test(input.trim());
+}
+
+function isLandmarkLike(match: NominatimResult) {
+  const administrativeTypes = new Set([
+    "administrative",
+    "city",
+    "town",
+    "village",
+    "hamlet",
+    "suburb",
+    "postcode",
+    "postal_code",
+    "municipality",
+    "county",
+    "state",
+    "country",
+  ]);
+
+  return (
+    !administrativeTypes.has(match.type) &&
+    !administrativeTypes.has(match.addresstype ?? "") &&
+    match.class !== "boundary"
+  );
+}
+
 type OpenMeteoGeocodingResult = {
   name: string;
   latitude: number;
@@ -288,6 +387,9 @@ type NominatimResult = {
   display_name: string;
   lat: string;
   lon: string;
+  class: string;
+  type: string;
+  addresstype?: string;
 };
 
 type OpenMeteoForecastResponse = {

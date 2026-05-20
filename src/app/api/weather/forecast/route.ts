@@ -9,6 +9,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const parsed = locationQuerySchema.safeParse({
     location: searchParams.get("location") ?? undefined,
+    locationType: searchParams.get("locationType") ?? undefined,
     lat: searchParams.get("lat") ?? undefined,
     lon: searchParams.get("lon") ?? undefined,
   });
@@ -18,9 +19,9 @@ export async function GET(request: Request) {
   }
 
   try {
-    const { location, lat, lon } = parsed.data;
+    const { location, locationType, lat, lon } = parsed.data;
     const bundle = location
-        ? await getWeatherBundleForLocation(location)
+        ? await getWeatherBundleForLocation(location, { locationType })
         : lat !== undefined && lon !== undefined
         ? await getWeatherBundleForCoordinates(lat, lon, {
             isCurrentLocation: searchParams.get("source") === "current",

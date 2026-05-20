@@ -47,6 +47,7 @@ export async function POST(request: Request) {
         : await getWeatherBundleForLocation(parsed.data.location ?? "", {
             startDate: parsed.data.startDate,
             endDate: parsed.data.endDate,
+            locationType: parsed.data.locationType,
           });
     const savedInputLocation =
       parsed.data.isCurrentLocation

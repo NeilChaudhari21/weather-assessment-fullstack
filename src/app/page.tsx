@@ -84,7 +84,7 @@ export default function Home() {
         locationInputType === "coordinates"
           ? await apiFetch<WeatherBundle>(coordinateWeatherUrl(location))
           : await apiFetch<WeatherBundle>(
-              `/api/weather/current?location=${encodeURIComponent(location)}`,
+              locationWeatherUrl(location, locationInputType),
             );
       setWeather(data);
       setIsCurrentLocationResult(false);
@@ -158,6 +158,7 @@ export default function Home() {
       const dashboardWeather = await fetchDashboardWeather({
         location:
           locationInputType === "coordinates" ? undefined : location.trim(),
+        locationType: locationInputType,
         coordinates: coordinatePayload,
         isCurrentLocation: isCurrentLocationResult,
       });
@@ -748,10 +749,12 @@ async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
 
 async function fetchDashboardWeather({
   location,
+  locationType,
   coordinates,
   isCurrentLocation,
 }: {
   location?: string;
+  locationType: LocationInputType;
   coordinates: { latitude: number; longitude: number } | null;
   isCurrentLocation: boolean;
 }) {
@@ -764,8 +767,17 @@ async function fetchDashboardWeather({
   }
 
   return apiFetch<WeatherBundle>(
-    `/api/weather/current?location=${encodeURIComponent(location ?? "")}`,
+    locationWeatherUrl(location ?? "", locationType),
   );
+}
+
+function locationWeatherUrl(value: string, inputType: LocationInputType) {
+  const params = new URLSearchParams({
+    location: value,
+    locationType: inputType,
+  });
+
+  return `/api/weather/current?${params}`;
 }
 
 function coordinateWeatherUrl(value: string) {

@@ -4,17 +4,23 @@ const isoDateSchema = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD format.");
 
+export const locationTypeSchema = z.enum([
+  "cityTown",
+  "zip",
+  "coordinates",
+  "landmark",
+]);
+
 export const locationQuerySchema = z.object({
   location: z.string().trim().min(1, "Enter a location.").optional(),
+  locationType: locationTypeSchema.optional(),
   lat: z.coerce.number().min(-90).max(90).optional(),
   lon: z.coerce.number().min(-180).max(180).optional(),
 });
 
 export const weatherRequestSchema = z.object({
   location: z.string().trim().optional(),
-  locationType: z
-    .enum(["cityTown", "zip", "coordinates", "landmark"])
-    .optional(),
+  locationType: locationTypeSchema.optional(),
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
   isCurrentLocation: z.boolean().optional(),

@@ -61,6 +61,7 @@ export async function PATCH(request: Request, context: RouteContext) {
         : await getWeatherBundleForLocation(parsed.data.location ?? "", {
             startDate: parsed.data.startDate,
             endDate: parsed.data.endDate,
+            locationType: parsed.data.locationType,
           });
     const savedInputLocation =
       parsed.data.isCurrentLocation
