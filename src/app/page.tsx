@@ -2,7 +2,14 @@
 
 import dynamic from "next/dynamic";
 import {
+  Cloud,
+  CloudDrizzle,
+  CloudFog,
+  CloudLightning,
+  CloudRain,
+  CloudSnow,
   CloudSun,
+  Droplets,
   Download,
   Edit3,
   Loader2,
@@ -11,6 +18,7 @@ import {
   Newspaper,
   Save,
   Search,
+  Sun,
   Trash2,
   X,
 } from "lucide-react";
@@ -262,26 +270,26 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f6f8f4] text-stone-950">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
-        <header className="flex flex-col gap-4 border-b border-stone-200 pb-5 md:flex-row md:items-end md:justify-between">
+    <main className="weather-app-shell min-h-screen text-slate-950">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
+        <header className="glass-card flex flex-col gap-4 px-5 py-5 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-sky-700">
               Full-stack assessment
             </p>
-            <h1 className="mt-2 text-4xl font-semibold tracking-tight text-stone-950">
+            <h1 className="mt-2 text-4xl font-semibold tracking-tight text-slate-950">
               {appName}
             </h1>
           </div>
-          <div className="rounded-lg border border-stone-200 bg-white px-4 py-3 text-sm text-stone-700 shadow-sm">
-            Built by <span className="font-semibold text-stone-950">{candidateName}</span>
+          <div className="rounded-2xl border border-white/70 bg-white/75 px-4 py-3 text-sm text-slate-700 shadow-sm">
+            Built by <span className="font-semibold text-slate-950">{candidateName}</span>
           </div>
         </header>
 
         <section className="grid gap-5 lg:grid-cols-[380px_1fr]">
-          <div className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+          <div className="glass-card p-5">
             <div className="flex items-center gap-2">
-              <CloudSun className="h-5 w-5 text-emerald-700" />
+              <CloudSun className="h-5 w-5 text-sky-700" />
               <h2 className="text-xl font-semibold">Weather Lookup</h2>
             </div>
 
@@ -296,7 +304,7 @@ export default function Home() {
                     setLocationInputType(event.target.value as LocationInputType);
                     setIsCurrentLocationResult(false);
                   }}
-                  className="mt-2 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-stone-950 outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+                  className="input-surface mt-2"
                 >
                   {locationInputTypes.map((type) => (
                     <option key={type.value} value={type.value}>
@@ -317,13 +325,13 @@ export default function Home() {
                     setIsCurrentLocationResult(false);
                   }}
                   placeholder={locationPlaceholder(locationInputType)}
-                  className="mt-2 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-stone-950 outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+                  className="input-surface mt-2"
                 />
               </label>
 
               <div className="grid gap-3 sm:grid-cols-[1fr_1.45fr]">
                 <button
-                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-700 px-4 py-2 font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-sky-600 px-4 py-2.5 font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-60"
                   disabled={isSearching}
                   type="submit"
                 >
@@ -335,7 +343,7 @@ export default function Home() {
                   Search
                 </button>
                 <button
-                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-stone-300 px-4 py-2 font-semibold text-stone-800 transition hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/70 bg-white/70 px-4 py-2.5 font-semibold text-slate-800 shadow-sm transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
                   disabled={isUsingLocation}
                   type="button"
                   onClick={handleUseCurrentLocation}
@@ -354,12 +362,12 @@ export default function Home() {
               <p className="text-sm font-medium text-stone-700">
                 Temperature unit
               </p>
-              <div className="mt-2 grid grid-cols-2 rounded-lg border border-stone-300 bg-stone-100 p-1">
+              <div className="mt-2 grid grid-cols-2 rounded-2xl border border-white/70 bg-white/55 p-1 shadow-inner">
                 <button
                   className={`rounded-md px-3 py-2 text-sm font-semibold transition ${
                     temperatureUnit === "celsius"
-                      ? "bg-white text-stone-950 shadow-sm"
-                      : "text-stone-600 hover:text-stone-950"
+                      ? "bg-slate-950 text-white shadow-sm"
+                      : "text-slate-600 hover:text-slate-950"
                   }`}
                   onClick={() => setTemperatureUnit("celsius")}
                   type="button"
@@ -369,8 +377,8 @@ export default function Home() {
                 <button
                   className={`rounded-md px-3 py-2 text-sm font-semibold transition ${
                     temperatureUnit === "fahrenheit"
-                      ? "bg-white text-stone-950 shadow-sm"
-                      : "text-stone-600 hover:text-stone-950"
+                      ? "bg-slate-950 text-white shadow-sm"
+                      : "text-slate-600 hover:text-slate-950"
                   }`}
                   onClick={() => setTemperatureUnit("fahrenheit")}
                   type="button"
@@ -389,7 +397,7 @@ export default function Home() {
                     value={startDate}
                     onChange={(event) => setStartDate(event.target.value)}
                     type="date"
-                    className="mt-2 w-full rounded-lg border border-stone-300 px-3 py-2 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+                    className="input-surface mt-2"
                   />
                 </label>
                 <label className="block">
@@ -398,12 +406,12 @@ export default function Home() {
                     value={endDate}
                     onChange={(event) => setEndDate(event.target.value)}
                     type="date"
-                    className="mt-2 w-full rounded-lg border border-stone-300 px-3 py-2 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+                    className="input-surface mt-2"
                   />
                 </label>
               </div>
               <button
-                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-stone-950 px-4 py-2 font-semibold text-white transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-slate-950 to-indigo-900 px-4 py-2.5 font-semibold text-white shadow-lg shadow-indigo-900/20 transition hover:from-slate-800 hover:to-indigo-800 disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={isSaving}
                 type="submit"
               >
@@ -421,7 +429,7 @@ export default function Home() {
                 className={`mt-5 rounded-lg border px-3 py-2 text-sm ${
                   error
                     ? "border-red-200 bg-red-50 text-red-700"
-                    : "border-emerald-200 bg-emerald-50 text-emerald-800"
+                    : "border-sky-200 bg-sky-50 text-sky-800"
                 }`}
               >
                 {error || status}
@@ -490,9 +498,11 @@ function WeatherResults({
 }) {
   if (!weather) {
     return (
-      <section className="flex min-h-[520px] items-center justify-center rounded-lg border border-dashed border-stone-300 bg-white p-6 text-center shadow-sm">
+      <section className="glass-card flex min-h-[520px] items-center justify-center p-6 text-center">
         <div>
-          <CloudSun className="mx-auto h-12 w-12 text-emerald-700" />
+          <div className="weather-icon-bubble mx-auto">
+            <CloudSun className="h-16 w-16 text-sky-700" />
+          </div>
           <h2 className="mt-4 text-2xl font-semibold">Search for weather</h2>
           <p className="mt-2 max-w-md text-stone-600">
             Enter a place or use browser location to see current weather,
@@ -506,54 +516,69 @@ function WeatherResults({
   return (
     <section className="grid gap-5 xl:grid-cols-[1fr_360px]">
       <div className="space-y-5">
-        <div className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="weather-hero-card p-6 text-white">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <div className="flex items-center gap-2 text-sm font-medium text-emerald-700">
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 text-sm font-medium text-sky-50 ring-1 ring-white/20">
                 <MapPin className="h-4 w-4" />
                 {weather.location.name}
               </div>
-              <h2 className="mt-3 text-5xl font-semibold">
+              <h2 className="mt-5 text-7xl font-semibold tracking-tight">
                 {formatTemperature(weather.current.temperature, temperatureUnit)}
               </h2>
-              <p className="mt-2 text-lg text-stone-700">
+              <p className="mt-2 text-xl text-sky-50">
                 {weather.current.summary}
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-3 text-sm sm:min-w-64">
+            <div className="flex flex-col items-stretch gap-4 sm:min-w-72">
+              <div className="hero-weather-icon self-center">
+                <WeatherIcon
+                  className="h-24 w-24 text-white"
+                  code={weather.current.weatherCode}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3 text-sm">
               <Metric
                 label="Feels"
                 value={formatTemperature(
                   weather.current.apparentTemperature,
                   temperatureUnit,
                 )}
+                variant="dark"
               />
-              <Metric label="Humidity" value={`${formatNumber(weather.current.humidity)}%`} />
-              <Metric label="Wind" value={`${formatNumber(weather.current.windSpeed)} km/h`} />
-              <Metric label="Rain" value={`${formatNumber(weather.current.precipitation)} mm`} />
+              <Metric label="Humidity" value={`${formatNumber(weather.current.humidity)}%`} variant="dark" />
+              <Metric label="Wind" value={`${formatNumber(weather.current.windSpeed)} km/h`} variant="dark" />
+              <Metric label="Rain" value={`${formatNumber(weather.current.precipitation)} mm`} variant="dark" />
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
-          <h2 className="text-xl font-semibold">5-Day Forecast</h2>
+        <div className="glass-card p-5">
+          <h2 className="text-xl font-semibold text-slate-950">5-Day Forecast</h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
             {weather.forecast.slice(0, 5).map((day) => (
               <div
-                className="rounded-lg border border-stone-200 bg-[#fbfcf8] p-3"
+                className="forecast-card p-4"
                 key={day.date}
               >
-                <p className="text-sm font-semibold text-stone-950">
+                <div className="flex items-start justify-between gap-3">
+                <p className="text-sm font-semibold text-slate-950">
                   {formatDate(day.date)}
                 </p>
-                <p className="mt-2 min-h-10 text-sm text-stone-600">
+                <WeatherIcon
+                  className="h-9 w-9 text-sky-600"
+                  code={day.weatherCode}
+                />
+                </div>
+                <p className="mt-3 min-h-10 text-sm text-slate-600">
                   {day.summary}
                 </p>
-                <p className="mt-3 text-lg font-semibold">
+                <p className="mt-3 text-lg font-semibold text-slate-950">
                   {formatTemperature(day.temperatureMax, temperatureUnit)} /{" "}
                   {formatTemperature(day.temperatureMin, temperatureUnit)}
                 </p>
-                <p className="mt-1 text-xs text-stone-500">
+                <p className="mt-1 text-xs text-slate-500">
                   {formatNumber(day.precipitationSum)} mm rain
                 </p>
               </div>
@@ -563,9 +588,9 @@ function WeatherResults({
       </div>
 
       <aside className="space-y-5">
-        <div className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+        <div className="glass-card p-5">
           <div className="flex items-center gap-2">
-            <Newspaper className="h-5 w-5 text-emerald-700" />
+            <Newspaper className="h-5 w-5 text-violet-700" />
             <h2 className="text-xl font-semibold">Location Insights</h2>
           </div>
           {isInsightLoading ? (
@@ -598,7 +623,7 @@ function WeatherResults({
               ) : null}
               {insight.pageUrl ? (
                 <a
-                  className="inline-flex text-sm font-semibold text-emerald-700 hover:text-emerald-900"
+                  className="inline-flex text-sm font-semibold text-violet-700 hover:text-violet-900"
                   href={insight.pageUrl}
                   rel="noreferrer"
                   target="_blank"
@@ -614,17 +639,22 @@ function WeatherResults({
           )}
         </div>
 
-        <div className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+        <div className="glass-card p-5">
           <h2 className="text-xl font-semibold">Air Quality</h2>
           {weather.airQuality ? (
             <div className="mt-4 space-y-3">
-              <p className="text-4xl font-semibold">{weather.airQuality.usAqi ?? "N/A"}</p>
-              <p className="text-stone-700">{weather.airQuality.label}</p>
+              <div className="flex items-center justify-between rounded-2xl bg-gradient-to-br from-emerald-100 to-sky-100 px-4 py-3">
+                <div>
+                  <p className="text-4xl font-semibold">{weather.airQuality.usAqi ?? "N/A"}</p>
+                  <p className="text-stone-700">{weather.airQuality.label}</p>
+                </div>
+                <Droplets className="h-10 w-10 text-emerald-600" />
+              </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <Metric label="PM2.5" value={`${formatNumber(weather.airQuality.pm25)} µg/m³`} />
-                <Metric label="PM10" value={`${formatNumber(weather.airQuality.pm10)} µg/m³`} />
-                <Metric label="Ozone" value={`${formatNumber(weather.airQuality.ozone)} µg/m³`} />
-                <Metric label="NO₂" value={`${formatNumber(weather.airQuality.nitrogenDioxide)} µg/m³`} />
+                <Metric label="PM2.5" value={`${formatNumber(weather.airQuality.pm25)} ug/m3`} />
+                <Metric label="PM10" value={`${formatNumber(weather.airQuality.pm10)} ug/m3`} />
+                <Metric label="Ozone" value={`${formatNumber(weather.airQuality.ozone)} ug/m3`} />
+                <Metric label="NO2" value={`${formatNumber(weather.airQuality.nitrogenDioxide)} ug/m3`} />
               </div>
             </div>
           ) : (
@@ -634,7 +664,7 @@ function WeatherResults({
           )}
         </div>
 
-        <div className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+        <div className="glass-card p-5">
           <h2 className="mb-4 text-xl font-semibold">Map</h2>
           <WeatherMap
             latitude={weather.location.latitude}
@@ -677,7 +707,7 @@ function SavedRequests({
   setEditingEndDate: (value: string) => void;
 }) {
   return (
-    <section className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+    <section className="glass-card p-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-xl font-semibold">Saved Weather Requests</h2>
@@ -692,14 +722,14 @@ function SavedRequests({
       </div>
 
       {records.length === 0 ? (
-        <div className="mt-5 rounded-lg border border-dashed border-stone-300 p-8 text-center text-stone-600">
+        <div className="mt-5 rounded-3xl border border-dashed border-sky-300 bg-white/50 p-8 text-center text-slate-600">
           No saved requests yet. Save one from the search panel.
         </div>
       ) : (
-        <div className="mt-5 overflow-x-auto">
+        <div className="mt-5 overflow-x-auto rounded-3xl bg-white/55 p-2 shadow-inner">
           <table className="w-full min-w-[860px] border-collapse text-left text-sm">
             <thead>
-              <tr className="border-b border-stone-200 text-stone-600">
+              <tr className="border-b border-sky-100 text-slate-600">
                 <th className="py-3 pr-3 font-semibold">Location</th>
                 <th className="py-3 pr-3 font-semibold">Date Range</th>
                 <th className="py-3 pr-3 font-semibold">Current</th>
@@ -710,7 +740,7 @@ function SavedRequests({
             </thead>
             <tbody>
               {records.map((record) => (
-                <tr className="border-b border-stone-100 align-top" key={record.id}>
+                <tr className="border-b border-white/80 align-top transition hover:bg-white/70" key={record.id}>
                   <td className="py-3 pr-3">
                     {editingId === record.id ? (
                       <input
@@ -718,7 +748,7 @@ function SavedRequests({
                         onChange={(event) =>
                           setEditingLocation(event.target.value)
                         }
-                        className="w-full rounded-lg border border-stone-300 px-2 py-1 outline-none focus:border-emerald-600"
+                        className="input-surface w-full px-2 py-1"
                       />
                     ) : (
                       <>
@@ -738,7 +768,7 @@ function SavedRequests({
                             setEditingStartDate(event.target.value)
                           }
                           type="date"
-                          className="rounded-lg border border-stone-300 px-2 py-1 outline-none focus:border-emerald-600"
+                          className="input-surface px-2 py-1"
                         />
                         <input
                           value={editingEndDate}
@@ -746,7 +776,7 @@ function SavedRequests({
                             setEditingEndDate(event.target.value)
                           }
                           type="date"
-                          className="rounded-lg border border-stone-300 px-2 py-1 outline-none focus:border-emerald-600"
+                          className="input-surface px-2 py-1"
                         />
                       </div>
                     ) : (
@@ -816,13 +846,33 @@ function SavedRequests({
   );
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
+function Metric({
+  label,
+  value,
+  variant = "light",
+}: {
+  label: string;
+  value: string;
+  variant?: "light" | "dark";
+}) {
   return (
-    <div className="rounded-lg bg-stone-100 px-3 py-2">
-      <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
+    <div
+      className={
+        variant === "dark"
+          ? "rounded-2xl border border-white/15 bg-white/15 px-3 py-2 backdrop-blur"
+          : "rounded-2xl border border-white/70 bg-white/70 px-3 py-2 shadow-sm"
+      }
+    >
+      <p
+        className={`text-xs font-semibold uppercase tracking-wide ${
+          variant === "dark" ? "text-sky-100" : "text-slate-500"
+        }`}
+      >
         {label}
       </p>
-      <p className="mt-1 font-semibold text-stone-950">{value}</p>
+      <p className={`mt-1 font-semibold ${variant === "dark" ? "text-white" : "text-slate-950"}`}>
+        {value}
+      </p>
     </div>
   );
 }
@@ -837,6 +887,54 @@ function ExportLink({ format }: { format: "json" | "csv" }) {
       {format.toUpperCase()}
     </a>
   );
+}
+
+function WeatherIcon({
+  code,
+  className,
+}: {
+  code: number | null;
+  className?: string;
+}) {
+  if (code === 0 || code === 1) {
+    return <Sun className={className} strokeWidth={1.8} />;
+  }
+
+  if (code === 2) {
+    return <CloudSun className={className} strokeWidth={1.8} />;
+  }
+
+  if (code === 3) {
+    return <Cloud className={className} strokeWidth={1.8} />;
+  }
+
+  if (code === 45 || code === 48) {
+    return <CloudFog className={className} strokeWidth={1.8} />;
+  }
+
+  if (code !== null && code >= 51 && code <= 57) {
+    return <CloudDrizzle className={className} strokeWidth={1.8} />;
+  }
+
+  if (
+    code !== null &&
+    ((code >= 61 && code <= 67) || (code >= 80 && code <= 82))
+  ) {
+    return <CloudRain className={className} strokeWidth={1.8} />;
+  }
+
+  if (
+    code !== null &&
+    ((code >= 71 && code <= 77) || code === 85 || code === 86)
+  ) {
+    return <CloudSnow className={className} strokeWidth={1.8} />;
+  }
+
+  if (code !== null && code >= 95) {
+    return <CloudLightning className={className} strokeWidth={1.8} />;
+  }
+
+  return <CloudSun className={className} strokeWidth={1.8} />;
 }
 
 async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
