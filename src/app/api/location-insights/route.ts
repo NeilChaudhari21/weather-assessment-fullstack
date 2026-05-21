@@ -19,7 +19,7 @@ export async function GET(request: Request) {
     longitude !== null &&
     Number.isFinite(latitude) &&
     Number.isFinite(longitude) &&
-    shouldUseCoordinateInsight(location)
+    shouldUseCoordinateInsight(location, locationType)
   ) {
     const result = await getCoordinateLocationInsight(latitude, longitude);
 
@@ -37,7 +37,14 @@ export async function GET(request: Request) {
   return Response.json(result);
 }
 
-function shouldUseCoordinateInsight(location: string | undefined) {
+function shouldUseCoordinateInsight(
+  location: string | undefined,
+  locationType: LocationInputType | undefined,
+) {
+  if (locationType === "zip") {
+    return true;
+  }
+
   if (!location) {
     return true;
   }

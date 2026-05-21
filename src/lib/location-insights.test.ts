@@ -62,7 +62,13 @@ describe("normalizeInsightQuery", () => {
   it("uses the place name only for postal-code locations", () => {
     expect(
       normalizeInsightQuery("98101, Seattle, King County, Washington", "zip"),
-    ).toBe("98101");
+    ).toBe("Seattle");
+  });
+
+  it("does not use raw ZIP codes as the Wikimedia search topic", () => {
+    expect(normalizeInsightQuery("10001, New York, New York", "zip")).toBe(
+      "New York",
+    );
   });
 
   it("keeps landmark name and nearby city context", () => {

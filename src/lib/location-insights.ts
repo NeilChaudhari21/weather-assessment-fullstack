@@ -161,7 +161,11 @@ export function normalizeInsightQuery(
     .replace(/[()]/g, "")
     .trim();
 
-  if (locationType === "cityTown" || locationType === "zip") {
+  if (locationType === "zip") {
+    return normalizePostalInsightQuery(cleaned);
+  }
+
+  if (locationType === "cityTown") {
     return cleaned.split(",")[0]?.trim() ?? cleaned;
   }
 
@@ -170,6 +174,16 @@ export function normalizeInsightQuery(
   }
 
   return cleaned.split(",").slice(0, 3).join(",").trim();
+}
+
+function normalizePostalInsightQuery(query: string) {
+  const parts = query
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+  const firstPlacePart = parts.find((part) => !isPostalCodeLike(part));
+
+  return firstPlacePart ?? parts[0] ?? query;
 }
 
 async function getDirectPageInsight(query: string) {
@@ -192,6 +206,16 @@ async function getDirectPageInsight(query: string) {
 
 function stripHtml(value: string | undefined) {
   return value?.replace(/<[^>]*>/g, "").trim() || null;
+}
+
+function isPostalCodeLike(value: string) {
+  const normalized = value.trim();
+
+  if (!normalized || normalized.length > 12) {
+    return false;
+  }
+
+  return /^(?=.*\d)[a-z0-9][a-z0-9 -]{2,10}[a-z0-9]$/i.test(normalized);
 }
 
 async function getJson<T>(url: string): Promise<T> {
