@@ -32,6 +32,10 @@ export async function resolveLocation(
     return resolveLandmarkLocation(trimmed);
   }
 
+  if (options.locationType === "cityTown" && isPostalCodeLike(trimmed)) {
+    throw new Error("Enter a city or town name, not a ZIP or postal code.");
+  }
+
   const params = new URLSearchParams({
     name: trimmed,
     count: "1",

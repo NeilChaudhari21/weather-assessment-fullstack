@@ -1,5 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { reverseResolveLocation } from "./weather";
+import { resolveLocation, reverseResolveLocation } from "./weather";
+
+describe("resolveLocation", () => {
+  it("rejects ZIP codes when city/town is selected", async () => {
+    await expect(
+      resolveLocation("98052", { locationType: "cityTown" }),
+    ).rejects.toThrow("Enter a city or town name, not a ZIP or postal code.");
+  });
+
+  it("rejects postal codes when city/town is selected", async () => {
+    await expect(
+      resolveLocation("M5V 3L9", { locationType: "cityTown" }),
+    ).rejects.toThrow("Enter a city or town name, not a ZIP or postal code.");
+  });
+});
 
 describe("reverseResolveLocation", () => {
   it("labels manually entered coordinates as coordinates", async () => {
