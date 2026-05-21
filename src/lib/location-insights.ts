@@ -2,6 +2,7 @@ import type { LocationInsight } from "./types";
 
 const wikiSearchUrl = "https://en.wikipedia.org/w/api.php";
 const wikiSummaryUrl = "https://en.wikipedia.org/api/rest_v1/page/summary";
+const nominatimReverseUrl = "https://nominatim.openstreetmap.org/reverse";
 
 export type WikimediaSearchResponse = {
   query?: {
@@ -25,6 +26,26 @@ export type WikimediaSummaryResponse = {
   };
   thumbnail?: {
     source?: string;
+  };
+};
+
+type NominatimReverseResponse = {
+  error?: string;
+  name?: string;
+  display_name?: string;
+  addresstype?: string;
+  address?: {
+    city?: string;
+    town?: string;
+    village?: string;
+    hamlet?: string;
+    municipality?: string;
+    county?: string;
+    state?: string;
+    country?: string;
+    ocean?: string;
+    sea?: string;
+    bay?: string;
   };
 };
 
@@ -73,6 +94,28 @@ export async function getLocationInsight(query: string) {
       message: "Location insights are unavailable right now.",
     };
   }
+}
+
+export async function getCoordinateLocationInsight(
+  latitude: number,
+  longitude: number,
+) {
+  const query = await getCoordinateInsightQuery(latitude, longitude);
+
+  return getLocationInsight(query);
+}
+
+export async function getCoordinateInsightQuery(
+  latitude: number,
+  longitude: number,
+) {
+  const reverse = await reverseGeocodeCoordinates(latitude, longitude);
+
+  if (reverse) {
+    return reverse;
+  }
+
+  return determineOcean(latitude, longitude);
 }
 
 export function normalizeWikimediaInsight(
@@ -126,4 +169,86 @@ async function getJson<T>(url: string): Promise<T> {
   }
 
   return response.json() as Promise<T>;
+}
+
+async function getNominatimJson<T>(url: string): Promise<T> {
+  const response = await fetch(url, {
+    next: { revalidate: 3600 },
+    headers: {
+      accept: "application/json",
+      "user-agent":
+        "weather-assessment-fullstack/1.0 (https://github.com/NeilChaudhari21/weather-assessment-fullstack)",
+      referer: "https://github.com/NeilChaudhari21/weather-assessment-fullstack",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Nominatim request failed with ${response.status}.`);
+  }
+
+  return response.json() as Promise<T>;
+}
+
+async function reverseGeocodeCoordinates(latitude: number, longitude: number) {
+  const params = new URLSearchParams({
+    format: "jsonv2",
+    lat: String(latitude),
+    lon: String(longitude),
+    zoom: "10",
+    addressdetails: "1",
+  });
+
+  try {
+    const data = await getNominatimJson<NominatimReverseResponse>(
+      `${nominatimReverseUrl}?${params}`,
+    );
+
+    if (data.error) {
+      return null;
+    }
+
+    const address = data.address ?? {};
+
+    return (
+      address.ocean ??
+      address.sea ??
+      address.bay ??
+      address.city ??
+      address.town ??
+      address.village ??
+      address.hamlet ??
+      address.municipality ??
+      data.name ??
+      data.display_name?.split(",")[0]?.trim() ??
+      null
+    );
+  } catch {
+    return null;
+  }
+}
+
+export function determineOcean(latitude: number, longitude: number) {
+  const normalizedLongitude = normalizeLongitude(longitude);
+
+  if (latitude >= 66.5) {
+    return "Arctic Ocean";
+  }
+
+  if (latitude <= -60) {
+    return "Southern Ocean";
+  }
+
+  if (normalizedLongitude >= 20 && normalizedLongitude < 120 && latitude < 30) {
+    return "Indian Ocean";
+  }
+
+  if (normalizedLongitude > -70 && normalizedLongitude < 20) {
+    return "Atlantic Ocean";
+  }
+
+  return "Pacific Ocean";
+}
+
+function normalizeLongitude(longitude: number) {
+  return ((((longitude + 180) % 360) + 360) % 360) - 180;
 }

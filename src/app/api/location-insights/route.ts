@@ -1,4 +1,7 @@
-import { getLocationInsight } from "@/lib/location-insights";
+import {
+  getCoordinateLocationInsight,
+  getLocationInsight,
+} from "@/lib/location-insights";
 import { jsonError } from "@/lib/records";
 
 export async function GET(request: Request) {
@@ -6,6 +9,21 @@ export async function GET(request: Request) {
   const location = searchParams.get("location")?.trim();
   const lat = searchParams.get("lat")?.trim();
   const lon = searchParams.get("lon")?.trim();
+  const latitude = lat ? Number(lat) : null;
+  const longitude = lon ? Number(lon) : null;
+
+  if (
+    latitude !== null &&
+    longitude !== null &&
+    Number.isFinite(latitude) &&
+    Number.isFinite(longitude) &&
+    shouldUseCoordinateInsight(location)
+  ) {
+    const result = await getCoordinateLocationInsight(latitude, longitude);
+
+    return Response.json(result);
+  }
+
   const query = location || [lat, lon].filter(Boolean).join(", ");
 
   if (!query) {
@@ -15,4 +33,15 @@ export async function GET(request: Request) {
   const result = await getLocationInsight(query);
 
   return Response.json(result);
+}
+
+function shouldUseCoordinateInsight(location: string | undefined) {
+  if (!location) {
+    return true;
+  }
+
+  return (
+    /^current location/i.test(location) ||
+    /^-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?$/.test(location)
+  );
 }
