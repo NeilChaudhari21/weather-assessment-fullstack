@@ -56,19 +56,28 @@ describe("normalizeInsightQuery", () => {
   it("uses the city name only for city and town locations", () => {
     expect(
       normalizeInsightQuery("Seattle, Washington, United States", "cityTown"),
-    ).toBe("Seattle");
+    ).toBe("Seattle, Washington");
   });
 
-  it("uses the place name only for postal-code locations", () => {
+  it("uses the place and state for postal-code locations", () => {
     expect(
       normalizeInsightQuery("98101, Seattle, King County, Washington", "zip"),
-    ).toBe("Seattle");
+    ).toBe("Seattle, Washington");
   });
 
   it("does not use raw ZIP codes as the Wikimedia search topic", () => {
     expect(normalizeInsightQuery("10001, New York, New York", "zip")).toBe(
-      "New York",
+      "New York, New York",
     );
+  });
+
+  it("keeps region context for ambiguous ZIP-code city names", () => {
+    expect(
+      normalizeInsightQuery(
+        "98052, Redmond, King County, Washington, United States",
+        "zip",
+      ),
+    ).toBe("Redmond, Washington");
   });
 
   it("keeps landmark name and nearby city context", () => {
@@ -126,7 +135,7 @@ describe("getCoordinateInsightQuery", () => {
       );
 
     await expect(getCoordinateInsightQuery(47.6062, -122.3321)).resolves.toBe(
-      "Seattle",
+      "Seattle, Washington",
     );
 
     global.fetch = originalFetch;

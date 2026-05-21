@@ -64,7 +64,7 @@ export async function getLocationInsight(
   }
 
   try {
-    if (options.locationType === "cityTown") {
+    if (shouldTryDirectPageInsight(cleanQuery, options.locationType)) {
       const direct = await getDirectPageInsight(cleanQuery);
 
       if (direct.insight) {
@@ -166,7 +166,7 @@ export function normalizeInsightQuery(
   }
 
   if (locationType === "cityTown") {
-    return cleaned.split(",")[0]?.trim() ?? cleaned;
+    return normalizePlaceInsightQuery(cleaned);
   }
 
   if (locationType === "landmark") {
@@ -181,9 +181,38 @@ function normalizePostalInsightQuery(query: string) {
     .split(",")
     .map((part) => part.trim())
     .filter(Boolean);
-  const firstPlacePart = parts.find((part) => !isPostalCodeLike(part));
+  const placeParts = parts.filter(
+    (part) => !isPostalCodeLike(part) && !isCountyLike(part),
+  );
 
-  return firstPlacePart ?? parts[0] ?? query;
+  return formatPlaceWithRegion(placeParts) ?? parts[0] ?? query;
+}
+
+function normalizePlaceInsightQuery(query: string) {
+  const parts = query
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .filter((part) => !isCountyLike(part));
+
+  return formatPlaceWithRegion(parts) ?? query;
+}
+
+function formatPlaceWithRegion(parts: string[]) {
+  const [place, region] = parts;
+
+  if (!place) {
+    return null;
+  }
+
+  return region ? `${place}, ${region}` : place;
+}
+
+function shouldTryDirectPageInsight(
+  query: string,
+  locationType?: LocationInputType | "current",
+) {
+  return locationType === "cityTown" || locationType === "zip" || query.includes(",");
 }
 
 async function getDirectPageInsight(query: string) {
@@ -216,6 +245,10 @@ function isPostalCodeLike(value: string) {
   }
 
   return /^(?=.*\d)[a-z0-9][a-z0-9 -]{2,10}[a-z0-9]$/i.test(normalized);
+}
+
+function isCountyLike(value: string) {
+  return /\bcounty\b/i.test(value.trim());
 }
 
 async function getJson<T>(url: string): Promise<T> {
@@ -273,18 +306,25 @@ async function reverseGeocodeCoordinates(latitude: number, longitude: number) {
 
     const address = data.address ?? {};
 
-    return (
-      address.ocean ??
-      address.sea ??
-      address.bay ??
+    const waterPlace = address.ocean ?? address.sea ?? address.bay;
+
+    if (waterPlace) {
+      return waterPlace;
+    }
+
+    const landPlace =
       address.city ??
       address.town ??
       address.village ??
       address.hamlet ??
       address.municipality ??
       data.name ??
-      data.display_name?.split(",")[0]?.trim() ??
-      null
+      data.display_name?.split(",")[0]?.trim();
+
+    return formatPlaceWithRegion(
+      [landPlace, address.state ?? address.country].filter(
+        (part): part is string => Boolean(part),
+      ),
     );
   } catch {
     return null;
