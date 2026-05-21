@@ -9,6 +9,7 @@ import {
   CloudRain,
   CloudSnow,
   CloudSun,
+  Database,
   Droplets,
   Download,
   Edit3,
@@ -755,142 +756,184 @@ function SavedRequests({
   setEditingEndDate: (value: string) => void;
 }) {
   return (
-    <section className="glass-card p-6">
+    <section className="saved-requests-card p-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-indigo-700">
-            Database
-          </p>
-          <h2 className="mt-1 text-2xl font-semibold">Saved Weather Requests</h2>
-          <p className="mt-1 text-sm text-stone-600">
-            Database-backed CRUD records from Neon Postgres.
-          </p>
+        <div className="flex items-center gap-4">
+          <div className="rounded-3xl bg-gradient-to-br from-indigo-600 to-sky-500 p-3 text-white shadow-lg shadow-indigo-500/20">
+            <Database className="h-7 w-7" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-indigo-700">
+              Neon Database
+            </p>
+            <h2 className="mt-1 text-2xl font-semibold">
+              Saved Weather Requests
+            </h2>
+            <p className="mt-1 text-sm text-stone-600">
+              Stored weather snapshots with full CRUD controls.
+            </p>
+          </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <ExportLink format="json" />
           <ExportLink format="csv" />
         </div>
       </div>
 
       {records.length === 0 ? (
-        <div className="mt-5 rounded-3xl border border-dashed border-sky-300 bg-white/50 p-8 text-center text-slate-600">
-          No saved requests yet. Save one from the search panel.
+        <div className="mt-6 rounded-[28px] border border-dashed border-sky-300 bg-white/55 p-8 text-center text-slate-600 shadow-inner">
+          <div className="weather-icon-bubble mx-auto h-20 w-20 rounded-3xl">
+            <CloudSun className="h-10 w-10 text-sky-700" />
+          </div>
+          <p className="mt-4 font-semibold text-slate-950">
+            No saved requests yet
+          </p>
+          <p className="mt-1 text-sm text-slate-600">
+            Save a weather lookup and it will appear here.
+          </p>
         </div>
       ) : (
-        <div className="mt-5 overflow-x-auto rounded-[28px] border border-white/70 bg-white/55 p-2 shadow-inner">
-          <table className="w-full min-w-[860px] border-collapse text-left text-sm">
-            <thead>
-              <tr className="border-b border-sky-100 text-slate-600">
-                <th className="py-3 pr-3 font-semibold">Location</th>
-                <th className="py-3 pr-3 font-semibold">Date Range</th>
-                <th className="py-3 pr-3 font-semibold">Current</th>
-                <th className="py-3 pr-3 font-semibold">Air</th>
-                <th className="py-3 pr-3 font-semibold">Updated</th>
-                <th className="py-3 text-right font-semibold">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {records.map((record) => (
-                <tr className="border-b border-white/80 align-top transition hover:bg-white/70" key={record.id}>
-                  <td className="py-3 pr-3">
-                    {editingId === record.id ? (
-                      <input
-                        value={editingLocation}
-                        onChange={(event) =>
-                          setEditingLocation(event.target.value)
-                        }
-                        className="input-surface w-full px-2 py-1"
-                      />
-                    ) : (
-                      <>
-                        <p className="font-semibold">{record.resolvedName}</p>
-                        <p className="text-xs text-stone-500">
-                          Input: {record.inputLocation}
-                        </p>
-                      </>
-                    )}
-                  </td>
-                  <td className="py-3 pr-3">
-                    {editingId === record.id ? (
-                      <div className="grid grid-cols-2 gap-2">
-                        <input
-                          value={editingStartDate}
-                          onChange={(event) =>
-                            setEditingStartDate(event.target.value)
-                          }
-                          type="date"
-                          className="input-surface px-2 py-1"
-                        />
-                        <input
-                          value={editingEndDate}
-                          onChange={(event) =>
-                            setEditingEndDate(event.target.value)
-                          }
-                          type="date"
-                          className="input-surface px-2 py-1"
-                        />
-                      </div>
-                    ) : (
-                      `${record.startDate} to ${record.endDate}`
-                    )}
-                  </td>
-                  <td className="py-3 pr-3">
+        <div className="saved-request-grid mt-6">
+          {records.map((record) => (
+            <article className="saved-request-card p-5" key={record.id}>
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  {editingId === record.id ? (
+                    <input
+                      value={editingLocation}
+                      onChange={(event) =>
+                        setEditingLocation(event.target.value)
+                      }
+                      className="input-surface"
+                    />
+                  ) : (
+                    <>
+                      <p className="truncate text-lg font-semibold text-slate-950">
+                        {record.resolvedName}
+                      </p>
+                      <p className="mt-1 truncate text-xs font-medium text-slate-500">
+                        Input: {record.inputLocation}
+                      </p>
+                    </>
+                  )}
+                </div>
+                <div className="saved-request-icon-shell">
+                  <WeatherIcon
+                    className="h-9 w-9 text-white"
+                    code={record.weatherData.current.weatherCode}
+                  />
+                </div>
+              </div>
+
+              <div className="mt-5 flex items-end justify-between gap-4">
+                <div>
+                  <p className="text-4xl font-semibold tracking-tight text-slate-950">
                     {formatTemperature(
                       record.weatherData.current.temperature,
                       temperatureUnit,
                     )}
-                    ,{" "}
+                  </p>
+                  <p className="mt-1 text-sm font-medium text-slate-600">
                     {record.weatherData.current.summary}
-                  </td>
-                  <td className="py-3 pr-3">
+                  </p>
+                </div>
+                <div className="rounded-2xl bg-white/60 px-3 py-2 text-right shadow-sm">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Air
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-slate-950">
                     {record.airQualityData?.label ?? "Unavailable"}
-                  </td>
-                  <td className="py-3 pr-3">{formatDateTime(record.updatedAt)}</td>
-                  <td className="py-3 text-right">
-                    {editingId === record.id ? (
-                      <div className="flex justify-end gap-2">
-                        <button
-                          className="rounded-2xl bg-emerald-600 p-2 text-white shadow-sm hover:bg-emerald-700"
-                          onClick={() => onUpdate(record.id)}
-                          title="Save changes"
-                          type="button"
-                        >
-                          <Save className="h-4 w-4" />
-                        </button>
-                        <button
-                          className="rounded-2xl border border-white/70 bg-white/70 p-2 hover:bg-white"
-                          onClick={onCancelEdit}
-                          title="Cancel edit"
-                          type="button"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex justify-end gap-2">
-                        <button
-                          className="rounded-2xl border border-white/70 bg-white/70 p-2 hover:bg-white"
-                          onClick={() => onEdit(record)}
-                          title="Edit record"
-                          type="button"
-                        >
-                          <Edit3 className="h-4 w-4" />
-                        </button>
-                        <button
-                          className="rounded-2xl border border-red-200 bg-red-50/60 p-2 text-red-700 hover:bg-red-100"
-                          onClick={() => onDelete(record.id)}
-                          title="Delete record"
-                          type="button"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </p>
+                </div>
+              </div>
+
+              {editingId === record.id ? (
+                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                  <label className="block">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Start
+                    </span>
+                    <input
+                      value={editingStartDate}
+                      onChange={(event) =>
+                        setEditingStartDate(event.target.value)
+                      }
+                      type="date"
+                      className="input-surface mt-2"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      End
+                    </span>
+                    <input
+                      value={editingEndDate}
+                      onChange={(event) =>
+                        setEditingEndDate(event.target.value)
+                      }
+                      type="date"
+                      className="input-surface mt-2"
+                    />
+                  </label>
+                </div>
+              ) : (
+                <div className="mt-5 grid grid-cols-2 gap-3">
+                  <div className="saved-request-metric">
+                    <p>Date Range</p>
+                    <strong>
+                      {formatDate(record.startDate)} to {formatDate(record.endDate)}
+                    </strong>
+                  </div>
+                  <div className="saved-request-metric">
+                    <p>Updated</p>
+                    <strong>{formatDateTime(record.updatedAt)}</strong>
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-5 flex justify-end gap-2">
+                {editingId === record.id ? (
+                  <>
+                    <button
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition hover:bg-emerald-700"
+                      onClick={() => onUpdate(record.id)}
+                      type="button"
+                    >
+                      <Save className="h-4 w-4" />
+                      Save
+                    </button>
+                    <button
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/70 bg-white/70 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-white"
+                      onClick={onCancelEdit}
+                      type="button"
+                    >
+                      <X className="h-4 w-4" />
+                      Cancel
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/70 bg-white/70 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-white"
+                      onClick={() => onEdit(record)}
+                      type="button"
+                    >
+                      <Edit3 className="h-4 w-4" />
+                      Edit
+                    </button>
+                    <button
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl border border-red-200 bg-red-50/70 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100"
+                      onClick={() => onDelete(record.id)}
+                      type="button"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Delete
+                    </button>
+                  </>
+                )}
+              </div>
+            </article>
+          ))}
         </div>
       )}
     </section>
@@ -931,7 +974,7 @@ function Metric({
 function ExportLink({ format }: { format: "json" | "csv" }) {
   return (
     <a
-      className="inline-flex items-center justify-center gap-2 rounded-lg border border-stone-300 px-3 py-2 text-sm font-semibold text-stone-800 transition hover:bg-stone-100"
+      className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/70 bg-white/75 px-4 py-2.5 text-sm font-semibold text-indigo-900 shadow-sm transition hover:bg-white"
       href={`/api/weather-requests/export?format=${format}`}
     >
       <Download className="h-4 w-4" />
