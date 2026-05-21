@@ -11,6 +11,7 @@ Built by **Neil C.**
 - Display current weather and a 5-day forecast.
 - Display air-quality data as an additional API integration.
 - Show the resolved location on an OpenStreetMap/Leaflet map.
+- Display live Wikimedia location insights for searched locations.
 - Save weather requests with location and date range.
 - Read, update, and delete saved weather records.
 - Export saved records as JSON or CSV.
@@ -27,6 +28,7 @@ Built by **Neil C.**
 - Open-Meteo Geocoding API
 - Open-Meteo Air Quality API
 - Leaflet and OpenStreetMap
+- Wikimedia/Wikipedia APIs
 
 ## Local Setup
 
@@ -102,6 +104,7 @@ npm run db:studio
 - `GET /api/weather/current?location=Seattle`
 - `GET /api/weather/current?lat=47.6062&lon=-122.3321`
 - `GET /api/weather/forecast?location=Seattle`
+- `GET /api/location-insights?location=Seattle`
 - `POST /api/weather-requests`
 - `GET /api/weather-requests`
 - `GET /api/weather-requests/:id`
@@ -114,5 +117,6 @@ npm run db:studio
 
 - Neon Auth is intentionally disabled because this assessment does not require user login or row-level security.
 - Open-Meteo does not require an API key for this non-commercial assessment project.
+- Section 2.2 API integration is covered by Air Quality, OpenStreetMap/Leaflet maps, and Wikimedia Location Insights.
 - Rotate the Neon database password before final deployment because an earlier connection string was shared during setup.
 - Replace the PM Accelerator description in the app with the exact LinkedIn/company wording before final submission if required.

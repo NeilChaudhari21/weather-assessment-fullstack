@@ -44,6 +44,15 @@ export type WeatherBundle = {
   airQuality: AirQuality | null;
 };
 
+export type LocationInsight = {
+  title: string;
+  description: string | null;
+  summary: string | null;
+  thumbnailUrl: string | null;
+  pageUrl: string | null;
+  source: "Wikimedia";
+};
+
 export type WeatherRequestRecord = {
   id: string;
   inputLocation: string;

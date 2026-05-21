@@ -8,13 +8,18 @@ import {
   Loader2,
   LocateFixed,
   MapPin,
+  Newspaper,
   Save,
   Search,
   Trash2,
   X,
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import type { WeatherBundle, WeatherRequestRecord } from "@/lib/types";
+import type {
+  LocationInsight,
+  WeatherBundle,
+  WeatherRequestRecord,
+} from "@/lib/types";
 import { toDateInputValue } from "@/lib/validation";
 
 const WeatherMap = dynamic(() => import("@/components/WeatherMap"), {
@@ -48,6 +53,10 @@ export default function Home() {
   const [startDate, setStartDate] = useState(today);
   const [endDate, setEndDate] = useState(today);
   const [weather, setWeather] = useState<WeatherBundle | null>(null);
+  const [locationInsight, setLocationInsight] =
+    useState<LocationInsight | null>(null);
+  const [insightMessage, setInsightMessage] = useState("");
+  const [isInsightLoading, setIsInsightLoading] = useState(false);
   const [isCurrentLocationResult, setIsCurrentLocationResult] = useState(false);
   const [records, setRecords] = useState<WeatherRequestRecord[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -87,6 +96,7 @@ export default function Home() {
               locationWeatherUrl(location, locationInputType),
             );
       setWeather(data);
+      await loadLocationInsight(data);
       setIsCurrentLocationResult(false);
       setStatus(successWeatherMessage(data, locationInputType));
     } catch (caught) {
@@ -114,6 +124,7 @@ export default function Home() {
             `/api/weather/current?lat=${latitude}&lon=${longitude}&source=current`,
           );
           setWeather(data);
+          await loadLocationInsight(data);
           setIsCurrentLocationResult(true);
           setLocationInputType("coordinates");
           setLocation(data.location.input);
@@ -163,6 +174,7 @@ export default function Home() {
         isCurrentLocation: isCurrentLocationResult,
       });
       setWeather(dashboardWeather);
+      await loadLocationInsight(dashboardWeather);
       setStatus(`Saved ${record.resolvedName}.`);
     } catch (caught) {
       setError(errorMessage(caught));
@@ -201,6 +213,7 @@ export default function Home() {
         current.map((item) => (item.id === id ? record : item)),
       );
       setWeather(record.weatherData);
+      await loadLocationInsight(record.weatherData);
       setEditingId(null);
       setStatus(`Updated ${record.resolvedName}.`);
     } catch (caught) {
@@ -218,6 +231,33 @@ export default function Home() {
       setStatus("Saved request deleted.");
     } catch (caught) {
       setError(errorMessage(caught));
+    }
+  }
+
+  async function loadLocationInsight(nextWeather: WeatherBundle) {
+    setIsInsightLoading(true);
+    setLocationInsight(null);
+    setInsightMessage("");
+
+    try {
+      const query = nextWeather.location.name || nextWeather.location.input;
+      const params = new URLSearchParams({
+        location: query,
+        lat: String(nextWeather.location.latitude),
+        lon: String(nextWeather.location.longitude),
+      });
+      const data = await apiFetch<{
+        insight: LocationInsight | null;
+        message: string | null;
+      }>(`/api/location-insights?${params}`);
+
+      setLocationInsight(data.insight);
+      setInsightMessage(data.message ?? "");
+    } catch {
+      setLocationInsight(null);
+      setInsightMessage("Location insights are unavailable right now.");
+    } finally {
+      setIsInsightLoading(false);
     }
   }
 
@@ -389,7 +429,13 @@ export default function Home() {
             )}
           </div>
 
-          <WeatherResults temperatureUnit={temperatureUnit} weather={weather} />
+          <WeatherResults
+            insight={locationInsight}
+            insightMessage={insightMessage}
+            isInsightLoading={isInsightLoading}
+            temperatureUnit={temperatureUnit}
+            weather={weather}
+          />
         </section>
 
         <SavedRequests
@@ -430,9 +476,15 @@ export default function Home() {
 }
 
 function WeatherResults({
+  insight,
+  insightMessage,
+  isInsightLoading,
   temperatureUnit,
   weather,
 }: {
+  insight: LocationInsight | null;
+  insightMessage: string;
+  isInsightLoading: boolean;
   temperatureUnit: TemperatureUnit;
   weather: WeatherBundle | null;
 }) {
@@ -511,6 +563,57 @@ function WeatherResults({
       </div>
 
       <aside className="space-y-5">
+        <div className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+          <div className="flex items-center gap-2">
+            <Newspaper className="h-5 w-5 text-emerald-700" />
+            <h2 className="text-xl font-semibold">Location Insights</h2>
+          </div>
+          {isInsightLoading ? (
+            <div className="mt-4 flex items-center gap-2 text-sm text-stone-600">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Loading Wikimedia insight
+            </div>
+          ) : insight ? (
+            <div className="mt-4 space-y-3">
+              {insight.thumbnailUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  alt=""
+                  className="h-32 w-full rounded-lg object-cover"
+                  src={insight.thumbnailUrl}
+                />
+              ) : null}
+              <div>
+                <p className="font-semibold text-stone-950">{insight.title}</p>
+                {insight.description ? (
+                  <p className="mt-1 text-sm text-stone-600">
+                    {insight.description}
+                  </p>
+                ) : null}
+              </div>
+              {insight.summary ? (
+                <p className="text-sm leading-6 text-stone-700">
+                  {insight.summary}
+                </p>
+              ) : null}
+              {insight.pageUrl ? (
+                <a
+                  className="inline-flex text-sm font-semibold text-emerald-700 hover:text-emerald-900"
+                  href={insight.pageUrl}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  View on {insight.source}
+                </a>
+              ) : null}
+            </div>
+          ) : (
+            <p className="mt-3 text-sm leading-6 text-stone-600">
+              {insightMessage || "No Wikimedia insight found for this location."}
+            </p>
+          )}
+        </div>
+
         <div className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
           <h2 className="text-xl font-semibold">Air Quality</h2>
           {weather.airQuality ? (
