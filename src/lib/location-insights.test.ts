@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   determineOcean,
   getCoordinateInsightQuery,
+  normalizeInsightQuery,
   normalizeWikimediaInsight,
 } from "./location-insights";
 
@@ -48,6 +49,29 @@ describe("normalizeWikimediaInsight", () => {
     expect(insight?.pageUrl).toBe(
       "https://en.wikipedia.org/wiki/Space_Needle",
     );
+  });
+});
+
+describe("normalizeInsightQuery", () => {
+  it("uses the city name only for city and town locations", () => {
+    expect(
+      normalizeInsightQuery("Seattle, Washington, United States", "cityTown"),
+    ).toBe("Seattle");
+  });
+
+  it("uses the place name only for postal-code locations", () => {
+    expect(
+      normalizeInsightQuery("98101, Seattle, King County, Washington", "zip"),
+    ).toBe("98101");
+  });
+
+  it("keeps landmark name and nearby city context", () => {
+    expect(
+      normalizeInsightQuery(
+        "Space Needle, 400, Broad Street, Seattle",
+        "landmark",
+      ),
+    ).toBe("Space Needle");
   });
 });
 

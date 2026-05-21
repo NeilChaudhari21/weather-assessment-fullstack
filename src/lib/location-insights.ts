@@ -1,4 +1,5 @@
 import type { LocationInsight } from "./types";
+import type { LocationInputType } from "./weather";
 
 const wikiSearchUrl = "https://en.wikipedia.org/w/api.php";
 const wikiSummaryUrl = "https://en.wikipedia.org/api/rest_v1/page/summary";
@@ -49,8 +50,11 @@ type NominatimReverseResponse = {
   };
 };
 
-export async function getLocationInsight(query: string) {
-  const cleanQuery = normalizeInsightQuery(query);
+export async function getLocationInsight(
+  query: string,
+  options: { locationType?: LocationInputType | "current" } = {},
+) {
+  const cleanQuery = normalizeInsightQuery(query, options.locationType);
 
   if (!cleanQuery) {
     return {
@@ -60,6 +64,14 @@ export async function getLocationInsight(query: string) {
   }
 
   try {
+    if (options.locationType === "cityTown") {
+      const direct = await getDirectPageInsight(cleanQuery);
+
+      if (direct.insight) {
+        return direct;
+      }
+    }
+
     const searchParams = new URLSearchParams({
       action: "query",
       list: "search",
@@ -140,14 +152,42 @@ export function normalizeWikimediaInsight(
   };
 }
 
-function normalizeInsightQuery(query: string) {
-  return query
+export function normalizeInsightQuery(
+  query: string,
+  locationType?: LocationInputType | "current",
+) {
+  const cleaned = query
     .replace(/^Current location\s*/i, "")
     .replace(/[()]/g, "")
-    .split(",")
-    .slice(0, 3)
-    .join(",")
     .trim();
+
+  if (locationType === "cityTown" || locationType === "zip") {
+    return cleaned.split(",")[0]?.trim() ?? cleaned;
+  }
+
+  if (locationType === "landmark") {
+    return cleaned.split(",")[0]?.trim() ?? cleaned;
+  }
+
+  return cleaned.split(",").slice(0, 3).join(",").trim();
+}
+
+async function getDirectPageInsight(query: string) {
+  try {
+    const summary = await getJson<WikimediaSummaryResponse>(
+      `${wikiSummaryUrl}/${encodeURIComponent(query)}`,
+    );
+
+    return {
+      insight: normalizeWikimediaInsight({ title: query }, summary),
+      message: null,
+    };
+  } catch {
+    return {
+      insight: null,
+      message: null,
+    };
+  }
 }
 
 function stripHtml(value: string | undefined) {

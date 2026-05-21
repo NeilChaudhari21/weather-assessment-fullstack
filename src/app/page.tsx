@@ -251,6 +251,7 @@ export default function Home() {
       const query = nextWeather.location.name || nextWeather.location.input;
       const params = new URLSearchParams({
         location: query,
+        locationType: locationInputType,
         lat: String(nextWeather.location.latitude),
         lon: String(nextWeather.location.longitude),
       });
