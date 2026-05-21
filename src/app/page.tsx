@@ -576,44 +576,47 @@ function WeatherResults({
               Daily high, low, rain, and conditions
             </p>
           </div>
-          <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <div className="forecast-grid mt-5">
             {weather.forecast.slice(0, 5).map((day) => (
               <div
                 className={`forecast-card ${forecastToneClass(day.weatherCode)} p-5`}
                 key={day.date}
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold text-slate-950">
-                      {formatDate(day.date)}
-                    </p>
-                    <p className="mt-1 text-xs font-medium uppercase tracking-wide text-slate-500">
-                      {day.summary}
-                    </p>
+                <div className="flex h-full flex-col">
+                  <div className="forecast-card-top">
+                    <div className="min-w-0">
+                      <p className="text-base font-semibold leading-tight text-slate-950">
+                        {formatDate(day.date)}
+                      </p>
+                      <p className="mt-2 text-xs font-semibold uppercase leading-5 tracking-wide text-slate-500">
+                        {day.summary}
+                      </p>
+                    </div>
+                    <div className="forecast-icon-shell">
+                      <WeatherIcon
+                        className="h-14 w-14 text-white"
+                        code={day.weatherCode}
+                      />
+                    </div>
                   </div>
-                  <div className="forecast-icon-shell">
-                    <WeatherIcon
-                      className="h-14 w-14 text-white"
-                      code={day.weatherCode}
-                    />
-                  </div>
-                </div>
-                <p className="mt-7 text-2xl font-semibold text-slate-950">
-                  {formatTemperature(day.temperatureMax, temperatureUnit)} /{" "}
-                  {formatTemperature(day.temperatureMin, temperatureUnit)}
-                </p>
-                <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
-                  <div className="rounded-2xl bg-white/60 px-3 py-2">
-                    <p className="font-semibold text-slate-500">Rain</p>
-                    <p className="mt-1 text-sm font-semibold text-slate-950">
-                      {formatNumber(day.precipitationSum)} mm
-                    </p>
-                  </div>
-                  <div className="rounded-2xl bg-white/60 px-3 py-2">
-                    <p className="font-semibold text-slate-500">Wind</p>
-                    <p className="mt-1 text-sm font-semibold text-slate-950">
-                      {formatNumber(day.windSpeedMax)} km/h
-                    </p>
+                  <p className="mt-6 text-3xl font-semibold leading-tight text-slate-950">
+                    {formatTemperature(day.temperatureMax, temperatureUnit)}
+                    <span className="mx-2 text-xl text-slate-500">/</span>
+                    {formatTemperature(day.temperatureMin, temperatureUnit)}
+                  </p>
+                  <div className="forecast-stats mt-5">
+                    <div className="forecast-stat-pill">
+                      <p className="text-xs font-semibold text-slate-500">Rain</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-950">
+                        {formatNumber(day.precipitationSum)} mm
+                      </p>
+                    </div>
+                    <div className="forecast-stat-pill">
+                      <p className="text-xs font-semibold text-slate-500">Wind</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-950">
+                        {formatNumber(day.windSpeedMax)} km/h
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
