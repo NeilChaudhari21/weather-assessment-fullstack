@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { jsonError, serializeWeatherRequest } from "@/lib/records";
+import { getWeatherSessionId } from "@/lib/session";
 import {
   parseDateOnly,
   validateDateRange,
@@ -16,7 +17,9 @@ function savedResolvedName(inputLocation: string | undefined, weatherName: strin
 }
 
 export async function GET() {
+  const sessionId = await getWeatherSessionId();
   const records = await prisma.weatherRequest.findMany({
+    where: { sessionId },
     orderBy: { createdAt: "desc" },
   });
 
@@ -24,6 +27,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const sessionId = await getWeatherSessionId();
   const body = await request.json().catch(() => null);
   const parsed = weatherRequestSchema.safeParse(body);
 
@@ -55,6 +59,7 @@ export async function POST(request: Request) {
         : parsed.data.location?.trim() || weather.location.input;
     const record = await prisma.weatherRequest.create({
       data: {
+        sessionId,
         inputLocation: savedInputLocation,
         resolvedName:
           parsed.data.locationType === "landmark"

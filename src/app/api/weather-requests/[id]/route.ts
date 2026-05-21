@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { jsonError, serializeWeatherRequest } from "@/lib/records";
+import { getWeatherSessionId } from "@/lib/session";
 import {
   parseDateOnly,
   validateDateRange,
@@ -20,8 +21,11 @@ type RouteContext = {
 };
 
 export async function GET(_request: Request, context: RouteContext) {
+  const sessionId = await getWeatherSessionId();
   const { id } = await context.params;
-  const record = await prisma.weatherRequest.findUnique({ where: { id } });
+  const record = await prisma.weatherRequest.findFirst({
+    where: { id, sessionId },
+  });
 
   if (!record) {
     return jsonError("Weather request not found.", 404);
@@ -31,6 +35,7 @@ export async function GET(_request: Request, context: RouteContext) {
 }
 
 export async function PATCH(request: Request, context: RouteContext) {
+  const sessionId = await getWeatherSessionId();
   const { id } = await context.params;
   const body = await request.json().catch(() => null);
   const parsed = weatherRequestSchema.safeParse(body);
@@ -41,7 +46,9 @@ export async function PATCH(request: Request, context: RouteContext) {
 
   try {
     validateDateRange(parsed.data.startDate, parsed.data.endDate);
-    const existing = await prisma.weatherRequest.findUnique({ where: { id } });
+    const existing = await prisma.weatherRequest.findFirst({
+      where: { id, sessionId },
+    });
 
     if (!existing) {
       return jsonError("Weather request not found.", 404);
@@ -96,10 +103,18 @@ export async function PATCH(request: Request, context: RouteContext) {
 }
 
 export async function DELETE(_request: Request, context: RouteContext) {
+  const sessionId = await getWeatherSessionId();
   const { id } = await context.params;
 
   try {
-    await prisma.weatherRequest.delete({ where: { id } });
+    const deleted = await prisma.weatherRequest.deleteMany({
+      where: { id, sessionId },
+    });
+
+    if (deleted.count === 0) {
+      return jsonError("Weather request not found.", 404);
+    }
+
     return Response.json({ ok: true });
   } catch {
     return jsonError("Weather request not found.", 404);

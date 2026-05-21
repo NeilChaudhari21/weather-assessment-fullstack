@@ -1,12 +1,15 @@
 import { weatherRequestsToCsv } from "@/lib/export";
 import { prisma } from "@/lib/prisma";
 import { jsonError, serializeWeatherRequest } from "@/lib/records";
+import { getWeatherSessionId } from "@/lib/session";
 
 export async function GET(request: Request) {
+  const sessionId = await getWeatherSessionId();
   const { searchParams } = new URL(request.url);
   const format = searchParams.get("format") ?? "json";
   const records = (
     await prisma.weatherRequest.findMany({
+      where: { sessionId },
       orderBy: { createdAt: "desc" },
     })
   ).map(serializeWeatherRequest);

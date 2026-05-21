@@ -10,6 +10,7 @@ datasource db {
 
 model WeatherRequest {
   id             String   @id @default(cuid())
+  sessionId      String
   inputLocation  String
   resolvedName   String
   latitude       Float
@@ -21,6 +22,7 @@ model WeatherRequest {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
+  @@index([sessionId, createdAt])
   @@index([createdAt])
   @@index([resolvedName])
 }
