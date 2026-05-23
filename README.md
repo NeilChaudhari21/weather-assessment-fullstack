@@ -4,6 +4,25 @@ This project completes both **Tech Assessment #1** and **Tech Assessment #2** fo
 
 Built by **Neil Chaudhari**
 
+## Submission Access
+
+For PM Accelerator review, this repository should remain **public** with clone/download access enabled until evaluation is complete. After evaluation, it can be made private again.
+
+If the repository is made private before evaluation, add these GitHub accounts as collaborators with repository access:
+
+- `community@pmaccelerator.io`
+- `hr@pmaccelerator.io`
+
+## What I Built
+
+- A full-stack weather dashboard using Next.js App Router, React, TypeScript, and Tailwind CSS.
+- Backend API routes for weather lookup, forecast lookup, saved request CRUD, CSV/JSON export, and Wikimedia location insights.
+- Neon Postgres persistence through Prisma ORM.
+- Anonymous browser-session scoping so each visitor only sees their own saved weather requests.
+- Input validation for city/town, ZIP/postal code, GPS coordinates, landmarks, and date ranges.
+- External API integrations for Open-Meteo weather, Open-Meteo air quality, Nominatim geocoding, OpenStreetMap/Leaflet maps, and Wikimedia/Wikipedia location insights.
+- A polished responsive UI with weather icons, current conditions, 5-day forecast cards, air-quality summary, map preview, location insights, saved request management, and assessment information.
+
 ## Features
 
 - Search weather by city, town, landmark, ZIP/postal-style input, or similar location text.
@@ -31,6 +50,8 @@ Built by **Neil Chaudhari**
 - Wikimedia/Wikipedia APIs
 
 ## Local Setup
+
+Requirements are listed in [REQUIREMENTS.md](./REQUIREMENTS.md) and in `package.json`.
 
 Install dependencies:
 
@@ -117,4 +138,3 @@ npm run db:studio
 - Open-Meteo does not require an API key for this non-commercial assessment project.
 - Section 2.2 API integration is covered by Air Quality, OpenStreetMap/Leaflet maps, and Wikimedia Location Insights.
 - Rotate the Neon database password before final deployment because an earlier connection string was shared during setup.
-- Replace the PM Accelerator description in the app with the exact LinkedIn/company wording before final submission if required.
