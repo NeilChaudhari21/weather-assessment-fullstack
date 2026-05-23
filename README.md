@@ -44,7 +44,6 @@ Create `.env.local` from `.env.example`:
 DATABASE_URL="your Neon pooled connection string"
 DIRECT_URL="your Neon direct connection string"
 NEXT_PUBLIC_APP_NAME="Weather Assessment"
-NEXT_PUBLIC_CANDIDATE_NAME="Neil Chaudhari"
 ```
 
 Generate the Prisma client:
@@ -75,7 +74,6 @@ Open [http://localhost:3000](http://localhost:3000).
    - `DATABASE_URL`
    - `DIRECT_URL`
    - `NEXT_PUBLIC_APP_NAME`
-   - `NEXT_PUBLIC_CANDIDATE_NAME`
 4. Deploy from the `main` branch.
 5. Run the production database migration:
 

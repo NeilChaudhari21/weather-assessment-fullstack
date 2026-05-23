@@ -41,8 +41,7 @@ const WeatherMap = dynamic(() => import("@/components/WeatherMap"), {
 });
 
 const appName = process.env.NEXT_PUBLIC_APP_NAME ?? "Weather Assessment";
-const candidateName =
-  process.env.NEXT_PUBLIC_CANDIDATE_NAME ?? "Neil Chaudhari";
+const candidateName = "Neil Chaudhari";
 const locationInputTypes = [
   { value: "cityTown", label: "City/Town" },
   { value: "zip", label: "ZIP / Postal Code" },
