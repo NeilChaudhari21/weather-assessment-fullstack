@@ -222,8 +222,9 @@ export default function Home() {
       setRecords((current) =>
         current.map((item) => (item.id === id ? record : item)),
       );
-      setWeather(record.weatherData);
-      await loadLocationInsight(record.weatherData);
+      const dashboardWeather = await fetchDashboardWeatherForRecord(record);
+      setWeather(dashboardWeather);
+      await loadLocationInsight(dashboardWeather);
       setEditingId(null);
       setStatus(`Updated ${record.resolvedName}.`);
     } catch (caught) {
@@ -1154,6 +1155,14 @@ async function fetchDashboardWeather({
 
   return apiFetch<WeatherBundle>(
     locationWeatherUrl(location ?? "", locationType),
+  );
+}
+
+async function fetchDashboardWeatherForRecord(record: WeatherRequestRecord) {
+  return apiFetch<WeatherBundle>(
+    `/api/weather/current?lat=${record.latitude}&lon=${record.longitude}${
+      record.inputLocation === "Current location" ? "&source=current" : ""
+    }`,
   );
 }
 
