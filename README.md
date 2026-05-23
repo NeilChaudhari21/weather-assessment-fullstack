@@ -60,7 +60,7 @@ Install dependencies:
 npm install
 ```
 
-Create `.env.local` from `.env.example`:
+Create `.env` from `.env.example`:
 
 ```bash
 DATABASE_URL="your Neon pooled connection string"
