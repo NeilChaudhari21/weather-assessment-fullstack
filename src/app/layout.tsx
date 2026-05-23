@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Weather Assessment",
-  description: "Full-stack weather app assessment by Neil C.",
+  description: "Full-stack weather app assessment by Neil Chaudhari.",
 };
 
 export default function RootLayout({

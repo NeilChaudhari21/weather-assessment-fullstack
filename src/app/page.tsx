@@ -41,7 +41,8 @@ const WeatherMap = dynamic(() => import("@/components/WeatherMap"), {
 });
 
 const appName = process.env.NEXT_PUBLIC_APP_NAME ?? "Weather Assessment";
-const candidateName = process.env.NEXT_PUBLIC_CANDIDATE_NAME ?? "Neil C.";
+const candidateName =
+  process.env.NEXT_PUBLIC_CANDIDATE_NAME ?? "Neil Chaudhari";
 const locationInputTypes = [
   { value: "cityTown", label: "City/Town" },
   { value: "zip", label: "ZIP / Postal Code" },
@@ -472,20 +473,48 @@ export default function Home() {
         />
 
         <section className="glass-card p-6">
-          <h2 className="text-xl font-semibold">Assessment Info</h2>
-          <p className="mt-3 max-w-4xl text-sm leading-6 text-stone-700">
-            This submission completes both Tech Assessment #1 and Tech Assessment
-            #2. It includes a JavaScript frontend, backend API routes, database
-            CRUD, validation, live weather API integration, air-quality API
-            integration, JSON/CSV export, and deployment-ready Vercel/Neon
-            configuration.
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-indigo-700">
+            Submission Details
           </p>
-          <p className="mt-3 max-w-4xl text-sm leading-6 text-stone-700">
-            Product Manager Accelerator supports professionals building product
-            management skills through community, education, and practical career
-            development. Confirm the exact company description from PM
-            Accelerator&apos;s LinkedIn page before final submission.
-          </p>
+          <h2 className="mt-1 text-2xl font-semibold">Assessment Info</h2>
+          <div className="mt-4 grid gap-4 lg:grid-cols-2">
+            <div className="rounded-3xl border border-white/70 bg-white/60 p-5 shadow-sm">
+              <h3 className="font-semibold text-slate-950">Project Summary</h3>
+              <p className="mt-3 text-sm leading-6 text-stone-700">
+                This full-stack weather application was built by {candidateName}
+                for the AI Engineer Intern technical assessment. It completes
+                both Tech Assessment #1 and Tech Assessment #2 with a Next.js
+                and TypeScript frontend, backend API routes, Neon Postgres
+                persistence, Prisma CRUD operations, input validation,
+                session-scoped saved requests, JSON/CSV export, and
+                deployment-ready Vercel configuration.
+              </p>
+              <p className="mt-3 text-sm leading-6 text-stone-700">
+                The app supports city/town, ZIP/postal code, GPS coordinate,
+                landmark, and browser geolocation lookups. It displays current
+                conditions, a 5-day forecast, air quality, an interactive map,
+                and Wikimedia-powered location insights.
+              </p>
+            </div>
+            <div className="rounded-3xl border border-white/70 bg-white/60 p-5 shadow-sm">
+              <h3 className="font-semibold text-slate-950">
+                Product Manager Accelerator
+              </h3>
+              <p className="mt-3 text-sm leading-6 text-stone-700">
+                The Product Manager Accelerator Program is designed to support
+                PM professionals through every stage of their careers. From
+                students looking for entry-level jobs to Directors looking to
+                take on a leadership role, the program has helped over hundreds
+                of students fulfill their career aspirations.
+              </p>
+              <p className="mt-3 text-sm leading-6 text-stone-700">
+                The Product Manager Accelerator community is ambitious and
+                committed. Through the program, members have learned, honed, and
+                developed new PM and leadership skills, giving them a strong
+                foundation for their future endeavors.
+              </p>
+            </div>
+          </div>
         </section>
       </div>
     </main>

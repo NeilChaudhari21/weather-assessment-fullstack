@@ -2,7 +2,7 @@
 
 This project completes both **Tech Assessment #1** and **Tech Assessment #2** for the AI Engineer Intern technical assessment. It is a deployed-ready full-stack weather app with a JavaScript frontend, backend API routes, database persistence, CRUD operations, validation, exports, and external API integrations.
 
-Built by **Neil C.**
+Built by **Neil Chaudhari**
 
 ## Features
 
@@ -44,7 +44,7 @@ Create `.env.local` from `.env.example`:
 DATABASE_URL="your Neon pooled connection string"
 DIRECT_URL="your Neon direct connection string"
 NEXT_PUBLIC_APP_NAME="Weather Assessment"
-NEXT_PUBLIC_CANDIDATE_NAME="Neil C."
+NEXT_PUBLIC_CANDIDATE_NAME="Neil Chaudhari"
 ```
 
 Generate the Prisma client:
