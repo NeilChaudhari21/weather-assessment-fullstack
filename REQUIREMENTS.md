@@ -2,6 +2,14 @@
 
 This is a Node.js/Next.js project. The installable package requirements are defined in `package.json` and locked by `package-lock.json`.
 
+## Deployment
+
+The project is deployed on Vercel and can be reviewed without local setup:
+
+[https://weather-assessment-fullstack.vercel.app/](https://weather-assessment-fullstack.vercel.app/)
+
+The requirements below are only needed if running the app locally.
+
 ## Runtime
 
 - Node.js 20 or newer recommended
