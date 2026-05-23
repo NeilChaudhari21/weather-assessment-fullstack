@@ -4,6 +4,14 @@ This project completes both **Tech Assessment #1** and **Tech Assessment #2** fo
 
 Built by **Neil Chaudhari**
 
+## Live Demo
+
+The easiest way to evaluate the app is to use the deployed Vercel version:
+
+[https://weather-assessment-fullstack.vercel.app/](https://weather-assessment-fullstack.vercel.app/)
+
+No local setup is required to test the main weather search, forecast, map, location insights, saved requests, CRUD actions, or export features.
+
 ## Submission Access
 
 For PM Accelerator review, this repository should remain **public** with clone/download access enabled until evaluation is complete. After evaluation, it can be made private again.
@@ -50,6 +58,8 @@ If the repository is made private before evaluation, add these GitHub accounts a
 - Wikimedia/Wikipedia APIs
 
 ## Local Setup
+
+Local setup is optional for reviewers because the deployed Vercel app is available above. Use these steps only if you want to run the project locally or inspect the full-stack setup.
 
 Requirements are listed in [REQUIREMENTS.md](./REQUIREMENTS.md) and in `package.json`.
 
