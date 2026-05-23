@@ -27,6 +27,7 @@ No local setup is required to test the main weather search, forecast, map, locat
 - Search weather by city, town, landmark, ZIP/postal-style input, or similar location text.
 - Use browser geolocation for current-location weather.
 - Display current weather and a 5-day forecast.
+- Show the searched location's local time and refresh it every minute.
 - Display air-quality data as an additional API integration.
 - Show the resolved location on an OpenStreetMap/Leaflet map.
 - Display live Wikimedia location insights for searched locations.

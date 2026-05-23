@@ -193,7 +193,10 @@ export async function getWeatherBundle(
   const airQuality = await getAirQuality(location.latitude, location.longitude);
 
   return {
-    location,
+    location: {
+      ...location,
+      timezone: location.timezone ?? forecast.timezone,
+    },
     current: forecast.current,
     forecast: forecast.forecast,
     airQuality,
@@ -227,6 +230,7 @@ async function getForecast(
   );
 
   return {
+    timezone: data.timezone,
     current: normalizeCurrent(data),
     forecast: normalizeDaily(data),
   };
@@ -397,6 +401,7 @@ type NominatimResult = {
 };
 
 type OpenMeteoForecastResponse = {
+  timezone?: string;
   current?: {
     temperature_2m?: number;
     relative_humidity_2m?: number;

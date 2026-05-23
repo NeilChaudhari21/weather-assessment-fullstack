@@ -9,6 +9,7 @@ import {
   CloudRain,
   CloudSnow,
   CloudSun,
+  Clock3,
   Database,
   Droplets,
   Download,
@@ -566,6 +567,7 @@ function WeatherResults({
               <p className="mt-2 text-xl text-sky-50">
                 {weather.current.summary}
               </p>
+              <LocalTimeClock timezone={weather.location.timezone} />
             </div>
             <div className="flex flex-col items-stretch gap-4 sm:min-w-72">
               <div className="hero-weather-icon self-center">
@@ -968,6 +970,37 @@ function SavedRequests({
   );
 }
 
+function LocalTimeClock({ timezone }: { timezone?: string }) {
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const interval = window.setInterval(() => setNow(new Date()), 60000);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
+  if (!timezone || !isValidTimeZone(timezone)) {
+    return null;
+  }
+
+  return (
+    <div className="mt-5 inline-flex items-center gap-3 rounded-3xl border border-white/20 bg-white/15 px-4 py-3 text-sky-50 shadow-lg shadow-slate-950/10 backdrop-blur">
+      <div className="rounded-2xl bg-white/15 p-2">
+        <Clock3 className="h-5 w-5" />
+      </div>
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-sky-100">
+          Local time
+        </p>
+        <p className="mt-1 text-lg font-semibold text-white">
+          {formatLocalTime(now, timezone)}
+        </p>
+        <p className="text-xs text-sky-100">{formatTimeZoneLabel(timezone)}</p>
+      </div>
+    </div>
+  );
+}
+
 function Metric({
   label,
   value,
@@ -1224,4 +1257,26 @@ function formatDateTime(value: string) {
     hour: "numeric",
     minute: "2-digit",
   }).format(new Date(value));
+}
+
+function formatLocalTime(value: Date, timezone: string) {
+  return new Intl.DateTimeFormat("en", {
+    timeZone: timezone,
+    weekday: "short",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(value);
+}
+
+function formatTimeZoneLabel(timezone: string) {
+  return timezone.replaceAll("_", " ");
+}
+
+function isValidTimeZone(timezone: string) {
+  try {
+    new Intl.DateTimeFormat("en", { timeZone: timezone }).format(new Date());
+    return true;
+  } catch {
+    return false;
+  }
 }
