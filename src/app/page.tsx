@@ -481,7 +481,7 @@ export default function Home() {
               <h3 className="font-semibold text-slate-950">Project Summary</h3>
               <p className="mt-3 text-sm leading-6 text-stone-700">
                 This full-stack weather application was built by {candidateName}
-                for the AI Engineer Intern technical assessment. It completes
+                 for the AI Engineer Intern technical assessment. It completes
                 both Tech Assessment #1 and Tech Assessment #2 with a Next.js
                 and TypeScript frontend, backend API routes, Neon Postgres
                 persistence, Prisma CRUD operations, input validation,
