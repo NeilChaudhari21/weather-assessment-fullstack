@@ -12,15 +12,6 @@ The easiest way to evaluate the app is to use the deployed Vercel version:
 
 No local setup is required to test the main weather search, forecast, map, location insights, saved requests, CRUD actions, or export features.
 
-## Submission Access
-
-For PM Accelerator review, this repository should remain **public** with clone/download access enabled until evaluation is complete. After evaluation, it can be made private again.
-
-If the repository is made private before evaluation, add these GitHub accounts as collaborators with repository access:
-
-- `community@pmaccelerator.io`
-- `hr@pmaccelerator.io`
-
 ## What I Built
 
 - A full-stack weather dashboard using Next.js App Router, React, TypeScript, and Tailwind CSS.
@@ -147,4 +138,3 @@ npm run db:studio
 - Neon Auth is intentionally disabled because this assessment does not require user login or row-level security.
 - Open-Meteo does not require an API key for this non-commercial assessment project.
 - Section 2.2 API integration is covered by Air Quality, OpenStreetMap/Leaflet maps, and Wikimedia Location Insights.
-- Rotate the Neon database password before final deployment because an earlier connection string was shared during setup.
