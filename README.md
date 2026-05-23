@@ -22,6 +22,22 @@ No local setup is required to test the main weather search, forecast, map, locat
 - External API integrations for Open-Meteo weather, Open-Meteo air quality, Nominatim geocoding, OpenStreetMap/Leaflet maps, and Wikimedia/Wikipedia location insights.
 - A polished responsive UI with weather icons, current conditions, 5-day forecast cards, air-quality summary, map preview, location insights, saved request management, and assessment information.
 
+## Assessment Coverage
+
+- Completed **Tech Assessment #1** frontend requirements.
+- Completed **Tech Assessment #2** backend requirements.
+- Completed **1.1 Five-Day Forecast** with a responsive next-5-days forecast section.
+- Completed **1.2 Error Handling** with validation and graceful messages for invalid locations, wrong location types, denied geolocation, invalid date ranges, API failures, and empty states.
+- Completed **2.1 CRUD** with create, read, update, and delete functionality backed by Neon Postgres.
+- Completed **2.2 API Integration** with multiple APIs:
+  - Open-Meteo Forecast API
+  - Open-Meteo Geocoding API
+  - Open-Meteo Air Quality API
+  - Nominatim geocoding/reverse geocoding
+  - OpenStreetMap/Leaflet map integration
+  - Wikimedia/Wikipedia Location Insights API
+- Completed **2.3 Data Export** with JSON and CSV exports.
+
 ## Features
 
 - Search weather by city, town, landmark, ZIP/postal-style input, or similar location text.
