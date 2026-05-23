@@ -54,8 +54,25 @@ export async function PATCH(request: Request, context: RouteContext) {
       return jsonError("Weather request not found.", 404);
     }
 
-    const weather =
-      parsed.data.latitude !== undefined && parsed.data.longitude !== undefined
+    const requestedLocation = parsed.data.location?.trim();
+    const isSameSavedLocation =
+      requestedLocation !== undefined &&
+      requestedLocation === existing.inputLocation;
+    const shouldRefreshExistingLocation =
+      isSameSavedLocation &&
+      parsed.data.latitude === undefined &&
+      parsed.data.longitude === undefined;
+    const weather = shouldRefreshExistingLocation
+      ? await getWeatherBundleForCoordinates(
+          existing.latitude,
+          existing.longitude,
+          {
+            startDate: parsed.data.startDate,
+            endDate: parsed.data.endDate,
+            isCurrentLocation: existing.inputLocation === "Current location",
+          },
+        )
+      : parsed.data.latitude !== undefined && parsed.data.longitude !== undefined
         ? await getWeatherBundleForCoordinates(
             parsed.data.latitude,
             parsed.data.longitude,
@@ -65,23 +82,26 @@ export async function PATCH(request: Request, context: RouteContext) {
               isCurrentLocation: parsed.data.isCurrentLocation,
             },
           )
-        : await getWeatherBundleForLocation(parsed.data.location ?? "", {
+        : await getWeatherBundleForLocation(requestedLocation ?? "", {
             startDate: parsed.data.startDate,
             endDate: parsed.data.endDate,
             locationType: parsed.data.locationType,
           });
-    const savedInputLocation =
-      parsed.data.isCurrentLocation
+    const savedInputLocation = shouldRefreshExistingLocation
+      ? existing.inputLocation
+      : parsed.data.isCurrentLocation
         ? "Current location"
-        : parsed.data.location?.trim() || weather.location.input;
+        : requestedLocation || weather.location.input;
+    const resolvedName = shouldRefreshExistingLocation
+      ? existing.resolvedName
+      : parsed.data.locationType === "landmark"
+        ? savedResolvedName(requestedLocation, weather.location.name)
+        : weather.location.name;
     const record = await prisma.weatherRequest.update({
       where: { id },
       data: {
         inputLocation: savedInputLocation,
-        resolvedName:
-          parsed.data.locationType === "landmark"
-            ? savedResolvedName(parsed.data.location, weather.location.name)
-            : weather.location.name,
+        resolvedName,
         latitude: weather.location.latitude,
         longitude: weather.location.longitude,
         startDate: parseDateOnly(parsed.data.startDate),
